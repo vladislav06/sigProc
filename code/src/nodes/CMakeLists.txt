@@ -1,6 +1,4 @@
-target_sources(sigProc PRIVATE
-        baseNode.cpp
-        dataInputNodes/waveformDataInputNode.cpp
-        dataTypes/baseDataType.cpp
-        dataTypes/arrayDataType.cpp
-)
+include_directories(./)
+add_subdirectory(dataTypes)
+add_subdirectory(dataInputNodes)
+add_subdirectory(dataOutputNodes)

@@ -4,8 +4,6 @@
 #pragma once
 #include <QtNodes/NodeData>
 class BaseDataType : public QtNodes::NodeData{
-public:
-
 };
 
 

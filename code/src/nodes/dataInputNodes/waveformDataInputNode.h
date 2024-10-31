@@ -4,9 +4,11 @@
 
 
 
+#include <QtWidgets>
 #include "src/nodes/baseNode.h"
+#include "ui_waveformDataInputNode.h"
 
-class WaveformDataInputNode : public BaseNode<std::tuple<>, std::tuple<ArrayDataType>> {
+class WaveformDataInputNode : public BaseNode<std::tuple<>, std::tuple<ArrayDataType<double>>> {
 public:
 
 
@@ -16,13 +18,20 @@ public:
 
     QWidget *embeddedWidget() override;
 
-    std::tuple<ArrayDataType> compute(std::tuple<> ports) override;
+    WaveformDataInputNode();
 
-    WaveformDataInputNode(){
-    }
+
+    std::tuple<std::shared_ptr<ArrayDataType<double>>> compute(std::tuple<>) override;
+
+private Q_SLOTS:
+
+    void valueChanged(QString str);
+
+    void onButonPress();
+
 private:
-    float a{};
-    float b{};
+    Ui::waveformDataInputNode ui;
+    QWidget *base;
 };
 
 

@@ -7,25 +7,40 @@
 #include "baseDataType.h"
 #include "nodeDataTypeType.h"
 
+/**
+ * Holds variable length array
+ */
+template<typename T>
 class ArrayDataType : public BaseDataType {
 public:
     using DataType = NodeDataTypeType<"Array", "array">;
     DataType nodeType;
 
     ArrayDataType()
-            : _number(0.0) {}
+            : data() {}
 
-    ArrayDataType(double const number)
-            : _number(number) {}
+    ArrayDataType(std::vector<T> const number)
+            : data(number) {}
+
 
     QtNodes::NodeDataType type() const override { return nodeType.getNodeDataType(); }
 
-    double number() const { return _number; }
+    /**
+     * Returns copy of internal array;
+     * @return
+     */
+    std::vector<T> array() const { return data; }
 
-    QString numberAsText() const { return QString::number(_number, 'f'); }
+
+    /**
+     * Returns reference to internal array
+     * @return
+     */
+    std::vector<T> &get() {
+        return data;
+    }
 
 private:
-    double _number;
-
+    std::vector<T> data;
 };
 
