@@ -7,6 +7,7 @@
 #include "ui_mainWindow.h"
 #include "src/nodes/dataInputNodes/waveformDataInputNode.h"
 #include "src/nodes/dataOutputNodes/waveformDataOutputNode.h"
+#include "src/nodes/mathNodes/mathNode.h"
 #include <QtNodes/DataFlowGraphicsScene>
 #include <QtNodes/GraphicsView>
 #include <QtNodes/NodeDelegateModelRegistry>
@@ -28,6 +29,7 @@ public:
     void registerNodes() {
         nodeRegistry->registerModel<WaveformDataInputNode>("Input");
         nodeRegistry->registerModel<WaveformDataOutputNode>("Output");
+        nodeRegistry->registerModel<MathNode<double>>("Math");
     }
 };
 

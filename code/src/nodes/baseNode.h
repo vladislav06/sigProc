@@ -123,8 +123,9 @@ public:
                 auto dataType = std::dynamic_pointer_cast<portType>(data);
                 std::dynamic_pointer_cast<NodePort<portType>>(ports.at(I))->data = dataType;
             }
-            generateNodePort<tup, I + 1>(ports);
+            setInNodePortData<tup, I + 1>(ports, data, index);
         }
+
     }
 
 
