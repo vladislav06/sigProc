@@ -25,6 +25,9 @@ public:
 
     std::shared_ptr<ArrayDataType<T>> compute(std::shared_ptr<ArrayDataType<T>> t1, std::shared_ptr<ArrayDataType<T>> t2) override {
         auto out = std::make_shared<ArrayDataType<T>>();
+        if (t1 == nullptr || t2 == nullptr) {
+            return out;
+        }
         out->get().resize(std::max(t1->get().size(), t2->get().size()));
 
         for (int a = 0; a < t1->get().size(); a++) {

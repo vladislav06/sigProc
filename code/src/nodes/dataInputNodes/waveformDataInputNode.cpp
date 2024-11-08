@@ -8,11 +8,7 @@
 #include <QtWidgets>
 
 WaveformDataInputNode::WaveformDataInputNode() {
-    base = new QWidget();
-    ui.setupUi(base);
 
-    connect(ui.filePath, &QLineEdit::textChanged, this, &WaveformDataInputNode::valueChanged);
-    connect(ui.openExplorer, &QPushButton::pressed, this, &WaveformDataInputNode::onButonPress);
 }
 
 QString WaveformDataInputNode::caption() const {
@@ -24,6 +20,13 @@ QString WaveformDataInputNode::name() const {
 }
 
 QWidget *WaveformDataInputNode::embeddedWidget() {
+    if (base == nullptr) {
+        base = new QWidget();
+        ui.setupUi(base);
+
+        connect(ui.filePath, &QLineEdit::textChanged, this, &WaveformDataInputNode::valueChanged);
+        connect(ui.openExplorer, &QPushButton::pressed, this, &WaveformDataInputNode::onButonPress);
+    }
     return base;
 }
 
@@ -52,6 +55,21 @@ void WaveformDataInputNode::onButonPress() {
     if (!names.empty()) {
         ui.filePath->setText(names.first());
     }
+}
+
+QJsonObject WaveformDataInputNode::onSave() const {
+    return {
+            {"path", ui.filePath->text()},
+    };
+}
+
+bool WaveformDataInputNode::onLoad(QJsonObject json) {
+    auto path = json["path"];
+    if (path == QJsonValue::Undefined) {
+        return false;
+    }
+    ui.filePath->setText(path.toString());
+    return true;
 }
 
 

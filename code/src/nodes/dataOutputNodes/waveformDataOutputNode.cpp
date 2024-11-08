@@ -7,11 +7,7 @@
 #include "src/nodes/dataInputNodes/fileLoader.h"
 
 WaveformDataOutputNode::WaveformDataOutputNode() {
-    base = new QWidget();
-    ui.setupUi(base);
 
-    connect(ui.filePath, &QLineEdit::textChanged, this, &WaveformDataOutputNode::valueChanged);
-    connect(ui.openExplorer, &QPushButton::pressed, this, &WaveformDataOutputNode::onButonPress);
 }
 
 QString WaveformDataOutputNode::caption() const {
@@ -23,6 +19,12 @@ QString WaveformDataOutputNode::name() const {
 }
 
 QWidget *WaveformDataOutputNode::embeddedWidget() {
+    if(base== nullptr){
+        base = new QWidget();
+        ui.setupUi(base);
+        connect(ui.filePath, &QLineEdit::textChanged, this, &WaveformDataOutputNode::valueChanged);
+        connect(ui.openExplorer, &QPushButton::pressed, this, &WaveformDataOutputNode::onButonPress);
+    }
     return base;
 }
 
@@ -39,19 +41,26 @@ void WaveformDataOutputNode::valueChanged(QString str) {
 }
 
 void WaveformDataOutputNode::onButonPress() {
-    QFileDialog dialog(base);
+    QString name = QFileDialog::getSaveFileName(base, tr("Save File"), QDir::currentPath(), tr("Waveform (*.WFF)"));
 
-    dialog.setFileMode(QFileDialog::ExistingFile);
-    dialog.setDirectory(QDir::currentPath());
+    if (!name.isEmpty()) {
+        ui.filePath->setText(name);
+    }
+}
 
-    QStringList names;
-    if (dialog.exec()) {
-        names = dialog.selectedFiles();
+QJsonObject WaveformDataOutputNode::onSave() const {
+    return {
+            {"path", ui.filePath->text()},
+    };
+}
+
+bool WaveformDataOutputNode::onLoad(QJsonObject json) {
+    auto path = json["path"];
+    if (path == QJsonValue::Undefined) {
+        return false;
     }
-    assert(names.size() <= 1);
-    if (!names.empty()) {
-        ui.filePath->setText(names.first());
-    }
+    ui.filePath->setText(path.toString());
+    return true;
 }
 
 

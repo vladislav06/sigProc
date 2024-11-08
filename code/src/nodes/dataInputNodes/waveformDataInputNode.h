@@ -23,6 +23,10 @@ public:
 
     std::tuple<std::shared_ptr<ArrayDataType<double>>> compute(std::tuple<>) override;
 
+    QJsonObject onSave() const override;
+
+    bool onLoad(QJsonObject json) override;
+
 private Q_SLOTS:
 
     void valueChanged(QString str);
@@ -31,7 +35,7 @@ private Q_SLOTS:
 
 private:
     Ui::waveformDataInputNode ui;
-    QWidget *base;
+    QWidget *base = nullptr;
 };
 
 

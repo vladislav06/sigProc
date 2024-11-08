@@ -31,5 +31,9 @@ public:
         nodeRegistry->registerModel<WaveformDataOutputNode>("Output");
         nodeRegistry->registerModel<MathNode<double>>("Math");
     }
+private:
+    void onSave(bool);
+    void onLoad(bool);
+
 };
 

@@ -18,6 +18,10 @@ public:
 
     QWidget *embeddedWidget() override;
 
+    QJsonObject onSave() const override;
+
+    bool onLoad(QJsonObject json) override;
+
 private Q_SLOTS:
 
     void valueChanged(QString str);
@@ -26,7 +30,7 @@ private Q_SLOTS:
 
 private:
     Ui::waveformDataOutputNode ui;
-    QWidget *base;
+    QWidget *base = nullptr;
 
 };
 
