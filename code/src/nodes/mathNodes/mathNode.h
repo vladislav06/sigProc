@@ -14,10 +14,10 @@
 #include "operations/additionOperation.h"
 #include "operations/subtractionOperation.h"
 
-#define  DataType ArrayDataType<T>
+#define TYPE ArrayDataType<T>
 
 template<typename T>
-class MathNode : public BaseNode<std::tuple<DataType, DataType >, std::tuple<DataType>> {
+class MathNode : public BaseNode<std::tuple<TYPE, TYPE >, std::tuple<TYPE>> {
 public:
     MathNode() {
         selectedOp = groups[0].ops[0];
@@ -118,13 +118,13 @@ public slots:
 private:
     QWidget *base = nullptr;
     QPushButton *button = nullptr;
-    BaseOperation<DataType > *selectedOp = nullptr;
+    BaseOperation<TYPE > *selectedOp = nullptr;
     QWidget *popup = nullptr;
 
 
     struct Group {
         QString name;
-        std::vector<BaseOperation<DataType > *> ops;
+        std::vector<BaseOperation<TYPE > *> ops;
     };
 
     /**
@@ -132,10 +132,10 @@ private:
      */
     std::vector<Group> groups = {
             {.name="Math", .ops={
-                    new AdditionOperation<DataType >(),
+                    new AdditionOperation<TYPE >(),
             }},
             {.name="Math", .ops={
-                    new SubtractionOperation<DataType >(),
+                    new SubtractionOperation<TYPE >(),
             }}
     };
 };

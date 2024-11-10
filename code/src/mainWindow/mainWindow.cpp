@@ -11,7 +11,7 @@ MainWindow::MainWindow(QWidget *parent) {
 
     registerNodes();
 
-    dataFlowGraphModel = new QtNodes::DataFlowGraphModel(nodeRegistry);
+    dataFlowGraphModel = new DynamicDataFlowGraphModel(nodeRegistry);
     scene = new QtNodes::DataFlowGraphicsScene(*dataFlowGraphModel, this);
     view = new QtNodes::GraphicsView(scene);
     this->nodeWidget->layout()->addWidget(view);

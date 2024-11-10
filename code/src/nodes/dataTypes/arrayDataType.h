@@ -40,6 +40,18 @@ public:
         return data;
     }
 
+    QString toString() override {
+        QString str = "[";
+        for (int i = 0; i < data.size(); i++) {
+            str += std::to_string(data[i]);
+            if (i != data.size() - 1) {
+                str += ", ";
+            }
+        }
+        str += "]";
+        return str;
+    }
+
 private:
     std::vector<T> data;
 };

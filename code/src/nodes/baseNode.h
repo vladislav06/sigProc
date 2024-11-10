@@ -71,20 +71,6 @@ private:
     std::vector<std::shared_ptr<BaseNodePort>> inNodePorts = generateNodePorts<InPorts>();
     std::vector<std::shared_ptr<BaseNodePort>> outNodePorts = generateNodePorts<OutPorts>();
 
-    [[nodiscard]] unsigned int nPorts(QtNodes::PortType portType) const override {
-        switch (portType) {
-            case QtNodes::PortType::In:
-                return std::tuple_size_v<InPorts>;
-                break;
-            case QtNodes::PortType::Out:
-                return std::tuple_size_v<OutPorts>;
-                break;
-            case QtNodes::PortType::None:
-                return 0;
-                break;
-        }
-        return 0;
-    }
 
     /**
     * Downcasts data to type specified in tuple at index and assigns it to BaseNodePort in ports at index
@@ -138,6 +124,20 @@ private:
 
 public:
 
+    [[nodiscard]] unsigned int nPorts(QtNodes::PortType portType) const override {
+        switch (portType) {
+            case QtNodes::PortType::In:
+                return std::tuple_size_v<InPorts>;
+                break;
+            case QtNodes::PortType::Out:
+                return std::tuple_size_v<OutPorts>;
+                break;
+            case QtNodes::PortType::None:
+                return 0;
+                break;
+        }
+        return 0;
+    }
 
     [[nodiscard]] QtNodes::NodeDataType
     dataType(QtNodes::PortType portType, QtNodes::PortIndex portIndex) const override {
@@ -219,5 +219,11 @@ public:
         }
         onLoad(data.toObject());
     }
+
+    //this is needed for nodes that do not have interactive widget and input
+    void outputConnectionCreated(const QtNodes::ConnectionId &) override {
+        updated();
+    }
+
 };
 

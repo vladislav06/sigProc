@@ -6,8 +6,13 @@
 
 #include "ui_mainWindow.h"
 #include "src/nodes/dataInputNodes/waveformDataInputNode.h"
+#include "src/nodes/dataInputNodes/objectCreateNode.h"
+
 #include "src/nodes/dataOutputNodes/waveformDataOutputNode.h"
+#include "src/nodes/objectNodes/setFieldNode.h"
 #include "src/nodes/mathNodes/mathNode.h"
+#include "src/nodes/dynamicDataFlowGraphModel.h"
+#include "src/nodes/previewNodes/previewNode.h"
 #include <QtNodes/DataFlowGraphicsScene>
 #include <QtNodes/GraphicsView>
 #include <QtNodes/NodeDelegateModelRegistry>
@@ -18,7 +23,7 @@ Q_OBJECT
 private:
     QtNodes::DataFlowGraphicsScene *scene;
     QtNodes::GraphicsView *view;
-    QtNodes::DataFlowGraphModel *dataFlowGraphModel;
+    DynamicDataFlowGraphModel *dataFlowGraphModel;
 
 public:
     explicit MainWindow(QWidget *parent = nullptr);
@@ -30,9 +35,14 @@ public:
         nodeRegistry->registerModel<WaveformDataInputNode>("Input");
         nodeRegistry->registerModel<WaveformDataOutputNode>("Output");
         nodeRegistry->registerModel<MathNode<double>>("Math");
+        nodeRegistry->registerModel<SetFieldNode>("Object");
+        nodeRegistry->registerModel<ObjectCreateNode>("Object");
+        nodeRegistry->registerModel<PreviewNode>("Output");
     }
+
 private:
     void onSave(bool);
+
     void onLoad(bool);
 
 };
