@@ -28,13 +28,7 @@ QWidget *WaveformDataOutputNode::embeddedWidget() {
     return base;
 }
 
-std::tuple<> WaveformDataOutputNode::compute(std::tuple<std::shared_ptr<ArrayDataType<double>>> in) {
-    auto array = std::get<0>(in);
-    if (array != nullptr) {
-        saveFileWFF(ui.filePath->text(), array);
-    }
-    return {};
-}
+
 
 void WaveformDataOutputNode::valueChanged(QString str) {
     updated();
@@ -62,5 +56,13 @@ bool WaveformDataOutputNode::onLoad(QJsonObject json) {
     ui.filePath->setText(path.toString());
     return true;
 }
+
+std::tuple<> WaveformDataOutputNode::compute(std::tuple<std::shared_ptr<ArrayDataType<double>>> params,
+                                             std::vector<std::shared_ptr<BaseDataType>> adParams) {
+    auto array = std::get<0>(params);
+    if (array != nullptr) {
+        saveFileWFF(ui.filePath->text(), array);
+    }
+    return {};}
 
 

@@ -26,27 +26,65 @@ QWidget *SetFieldNode::embeddedWidget() {
     if (base == nullptr) {
         base = new QWidget();
         base->setLayout(new QBoxLayout(QBoxLayout::TopToBottom));
-        fieldName = new QLineEdit();
-        base->layout()->addWidget(fieldName);
-        connect(fieldName, &QLineEdit::editingFinished, this, &SetFieldNode::editingFinished);
+        fieldNames.push_back(new QLineEdit());
+        base->layout()->addWidget(fieldNames.back());
+        connect(fieldNames.back(), &QLineEdit::editingFinished, this, &SetFieldNode::editingFinished);
     }
     return base;
 }
 
+
+void SetFieldNode::editingFinished() {
+    updated();
+}
+
 std::tuple<std::shared_ptr<ObjectDataType>>
-SetFieldNode::compute(std::tuple<std::shared_ptr<ObjectDataType>, std::shared_ptr<BaseDataType>> type1) {
-    auto object = std::get<0>(type1);
-    auto data = std::get<1>(type1);
-    if (object == nullptr || data == nullptr) {
+SetFieldNode::compute(std::tuple<std::shared_ptr<ObjectDataType>> params,
+                      std::vector<std::shared_ptr<BaseDataType>> adParams) {
+    auto object = std::get<0>(params);
+    if (object == nullptr) {
         return nullptr;
     }
-    if (!fieldName->text().isEmpty()) {
-        object->fields[fieldName->text()] = data;
+    if (adParams.size() != fieldNames.size()) {
+        throw std::runtime_error(
+                std::format("adParams.size() != fieldNames.size(),{}!={}", adParams.size(), fieldNames.size()));
+    }
 
+    for (int i = 0; i < fieldNames.size(); i++) {
+        auto fieldName = fieldNames[i];
+        auto data = adParams[i];
+        if (!fieldName->text().isEmpty()) {
+            object->fields[fieldName->text()] = data;
+        }
     }
     return object;
 }
 
-void SetFieldNode::editingFinished() {
-    updated();
+void SetFieldNode::onInputConnected(int index) {
+    //input object input port
+    if (index == 0) {
+        return;
+    }
+
+    fieldNames.push_back(new QLineEdit());
+    base->layout()->addWidget(fieldNames.back());
+    connect(fieldNames.back(), &QLineEdit::editingFinished, this, &SetFieldNode::editingFinished);
+
+    addInputPort();
+    emit embeddedWidgetSizeUpdated();
+}
+
+void SetFieldNode::onInputDisconnected(int index) {
+    //input object input port
+    if (index == 0) {
+        return;
+    }
+    removeInputPort(index, [this, index]() {
+        auto line = fieldNames.at(index - 1);
+        fieldNames.erase(fieldNames.begin() + index - 1);
+        delete line;
+    });
+
+
+    emit embeddedWidgetSizeUpdated();
 }

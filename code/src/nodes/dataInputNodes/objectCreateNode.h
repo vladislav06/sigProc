@@ -27,8 +27,8 @@ public:
     QWidget *embeddedWidget() override {
         return nullptr;
     }
-
-    std::tuple<std::shared_ptr<ObjectDataType>> compute(std::tuple<> type1) override {
+    std::tuple<std::shared_ptr<ObjectDataType>>
+    compute(std::tuple<> params, std::vector<std::shared_ptr<BaseDataType>> adParams) override {
         return {std::make_shared<ObjectDataType>()};
     }
 };

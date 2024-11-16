@@ -20,7 +20,7 @@ class NodeDataTypeType {
 public:
     inline static std::string id = Id.value;
 
-    QtNodes::NodeDataType getNodeDataType() const {
+    static QtNodes::NodeDataType getNodeDataType() {
         std::string s = extends::DataType::id;
         if (s != "") {
             std::string ss = s + "_" + Id.value;

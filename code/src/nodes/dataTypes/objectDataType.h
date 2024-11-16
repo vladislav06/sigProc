@@ -23,7 +23,12 @@ public:
         QJsonObject obj;
 
         for (auto const &[k, v]: fields) {
-            obj.insert(k, v->toString());
+            if (v == nullptr) {
+                obj.insert(k, "nullptr");
+            } else {
+                obj.insert(k, v->toString());
+            }
+
         }
         json.setObject(obj);
 

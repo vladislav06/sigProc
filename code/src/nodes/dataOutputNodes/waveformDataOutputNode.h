@@ -10,7 +10,6 @@
 class WaveformDataOutputNode : public BaseNode<std::tuple<ArrayDataType<double>>, std::tuple<>> {
 public:
     WaveformDataOutputNode();
-    std::tuple<> compute(std::tuple<std::shared_ptr<ArrayDataType<double>>> type1) override;
 
     QString caption() const override;
 
@@ -21,6 +20,9 @@ public:
     QJsonObject onSave() const override;
 
     bool onLoad(QJsonObject json) override;
+
+    std::tuple<> compute(std::tuple<std::shared_ptr<ArrayDataType<double>>> params,
+                         std::vector<std::shared_ptr<BaseDataType>> adParams) override;
 
 private Q_SLOTS:
 

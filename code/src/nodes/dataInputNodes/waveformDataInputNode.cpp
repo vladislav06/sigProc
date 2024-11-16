@@ -30,12 +30,6 @@ QWidget *WaveformDataInputNode::embeddedWidget() {
     return base;
 }
 
-std::tuple<std::shared_ptr<ArrayDataType<double>>>
-WaveformDataInputNode::compute(std::tuple<> in) {
-    //load file in to ArrayDataType
-    auto arr = loadFileWFF(ui.filePath->text());
-    return {arr};
-}
 
 void WaveformDataInputNode::valueChanged(QString str) {
     updated();
@@ -71,6 +65,12 @@ bool WaveformDataInputNode::onLoad(QJsonObject json) {
     ui.filePath->setText(path.toString());
     return true;
 }
+
+std::tuple<std::shared_ptr<ArrayDataType<double>>>
+WaveformDataInputNode::compute(std::tuple<> params, std::vector<std::shared_ptr<BaseDataType>> adParams) {
+    //load file in to ArrayDataType
+    auto arr = loadFileWFF(ui.filePath->text());
+    return {arr};}
 
 
 

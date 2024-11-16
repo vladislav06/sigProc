@@ -9,7 +9,6 @@
 
 class PreviewNode : public BaseNode<std::tuple<BaseDataType>, std::tuple<BaseDataType>> {
 public:
-    std::tuple<std::shared_ptr<BaseDataType>> compute(std::tuple<std::shared_ptr<BaseDataType>> type1) override;
 
     QJsonObject onSave() const override;
 
@@ -20,6 +19,10 @@ public:
     QString name() const override;
 
     QWidget *embeddedWidget() override;
+
+    std::tuple<std::shared_ptr<BaseDataType>>
+    compute(std::tuple<std::shared_ptr<BaseDataType>> params,
+            std::vector<std::shared_ptr<BaseDataType>> adParams) override;
 
 private:
     QWidget *base = nullptr;

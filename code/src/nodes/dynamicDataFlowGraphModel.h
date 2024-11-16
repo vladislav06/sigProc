@@ -46,4 +46,20 @@ public:
         return typesOut.contains(typesIn.back())
                && portVacant(QtNodes::PortType::Out) && portVacant(QtNodes::PortType::In);
     }
+
+    QtNodes::NodeId addNode(const QString nodeType) override {
+        auto id = QtNodes::DataFlowGraphModel::addNode(nodeType);
+
+        auto model = delegateModel<QtNodes::NodeDelegateModel>(id);
+
+        //register additional signal
+        connect(model, &QtNodes::NodeDelegateModel::embeddedWidgetSizeUpdated, this, [this, id]() {
+            //update node on next frame because widgets might still not be added
+            QTimer::singleShot(0, [this, id] {
+                Q_EMIT  this->nodeUpdated(id);
+            });
+        });
+
+        return id;
+    }
 };

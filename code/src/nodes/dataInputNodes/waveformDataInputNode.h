@@ -21,11 +21,12 @@ public:
     WaveformDataInputNode();
 
 
-    std::tuple<std::shared_ptr<ArrayDataType<double>>> compute(std::tuple<>) override;
-
     QJsonObject onSave() const override;
 
     bool onLoad(QJsonObject json) override;
+
+    std::tuple<std::shared_ptr<ArrayDataType<double>>>
+    compute(std::tuple<> params, std::vector<std::shared_ptr<BaseDataType>> adParams) override;
 
 private Q_SLOTS:
 

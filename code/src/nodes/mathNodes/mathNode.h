@@ -61,12 +61,6 @@ public:
         return base;
     }
 
-    std::tuple<std::shared_ptr<ArrayDataType<T>>>
-    compute(std::tuple<std::shared_ptr<ArrayDataType<T>>, std::shared_ptr<ArrayDataType<T>>> type1) override {
-
-        return {selectedOp->compute(std::get<0>(type1), std::get<1>(type1))};
-    }
-
 
 public slots:
 
@@ -113,6 +107,12 @@ public slots:
                 delete op;
             }
         }
+    }
+
+    std::tuple<std::shared_ptr<ArrayDataType<T>>>
+    compute(std::tuple<std::shared_ptr<ArrayDataType<T>>, std::shared_ptr<ArrayDataType<T>>> params,
+            std::vector<std::shared_ptr<BaseDataType>> adParams) override {
+        return {selectedOp->compute(std::get<0>(params), std::get<1>(params))};
     }
 
 private:
