@@ -19,14 +19,24 @@ MainWindow::MainWindow(QWidget *parent) {
 
     connect(this->actionSave, &QAction::triggered, this, &MainWindow::onSave);
     connect(this->actionOpen, &QAction::triggered, this, &MainWindow::onLoad);
+    connect(this->actionReload, &QAction::triggered, dataFlowGraphModel, &DynamicDataFlowGraphModel::trigger);
 
 }
 
 void MainWindow::onSave(bool) {
-    QString name = QFileDialog::getSaveFileName(this, tr("Save File"), QDir::currentPath(), tr("SigProc file (*.spf)"));
-    if (name == "") {
-        return;
+    QString name;
+    if (currentFile.isEmpty()) {
+        name = QFileDialog::getSaveFileName(this, tr("Save File"), QDir::currentPath(),
+                                            tr("SigProc file (*.spf)"));
+        if (name == "") {
+            return;
+        }
+        currentFile = name;
+        setWindowTitle(currentFile);
+    } else {
+        name = currentFile;
     }
+
 
     QFile jsonFile(name);
     jsonFile.open(QFile::WriteOnly);
@@ -53,4 +63,6 @@ void MainWindow::onLoad(bool) {
 
     auto doc = QJsonDocument().fromJson(jsonFile.readAll());
     dataFlowGraphModel->load(doc.object());
+    currentFile = name;
+    setWindowTitle(currentFile);
 }

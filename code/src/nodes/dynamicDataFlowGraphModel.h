@@ -4,62 +4,22 @@
 #pragma once
 
 #include <QtNodes/internal/DataFlowGraphModel.hpp>
-#include <utility>
 
 /**
  * Extension of DataFlowGraphModel which allows connection between nodes if NodeDataType is with the same base
  */
 class DynamicDataFlowGraphModel : public QtNodes::DataFlowGraphModel {
 public:
-    explicit DynamicDataFlowGraphModel(std::shared_ptr<QtNodes::NodeDelegateModelRegistry> registry)
-            : DataFlowGraphModel(std::move(registry)) {}
+    explicit DynamicDataFlowGraphModel(std::shared_ptr<QtNodes::NodeDelegateModelRegistry> registry);
 
-    bool connectionPossible(const QtNodes::ConnectionId connectionId) const override {
-        auto getDataType = [&](QtNodes::PortType const portType) {
-            return portData(getNodeId(portType, connectionId),
-                            portType,
-                            getPortIndex(portType, connectionId),
-                            QtNodes::PortRole::DataType)
-                    .value<QtNodes::NodeDataType>();
-        };
-
-        auto portVacant = [&](QtNodes::PortType const portType) {
-            QtNodes::NodeId const nodeId = getNodeId(portType, connectionId);
-            QtNodes::PortIndex const portIndex = getPortIndex(portType, connectionId);
-            auto const connected = connections(nodeId, portType, portIndex);
-
-            auto policy = portData(nodeId, portType, portIndex, QtNodes::PortRole::ConnectionPolicyRole)
-                    .value<QtNodes::ConnectionPolicy>();
-
-            return connected.empty() || (policy == QtNodes::ConnectionPolicy::Many);
-        };
-
-        auto typeOut = getDataType(QtNodes::PortType::Out);
-        auto typeIn = getDataType(QtNodes::PortType::In);
+    bool connectionPossible(QtNodes::ConnectionId connectionId) const override;
 
 
-        auto typesOut = typeOut.id.split("_");
-        auto typesIn = typeIn.id.split("_");
+    bool willHaveCycle(QtNodes::ConnectionId connectionId) const;
 
-        //check if out has same type as topmost in
+public slots:
 
-        return typesOut.contains(typesIn.back())
-               && portVacant(QtNodes::PortType::Out) && portVacant(QtNodes::PortType::In);
-    }
+    void onNodeCreation(QtNodes::NodeId nodeId);
 
-    QtNodes::NodeId addNode(const QString nodeType) override {
-        auto id = QtNodes::DataFlowGraphModel::addNode(nodeType);
-
-        auto model = delegateModel<QtNodes::NodeDelegateModel>(id);
-
-        //register additional signal
-        connect(model, &QtNodes::NodeDelegateModel::embeddedWidgetSizeUpdated, this, [this, id]() {
-            //update node on next frame because widgets might still not be added
-            QTimer::singleShot(0, [this, id] {
-                Q_EMIT  this->nodeUpdated(id);
-            });
-        });
-
-        return id;
-    }
+    void trigger();
 };

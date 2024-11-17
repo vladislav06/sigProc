@@ -11,6 +11,18 @@
 #include "src/nodes/dataTypes/arrayDataType.h"
 #include "src/nodes/nodePort.h"
 
+
+/**
+ * BaseNode base class with some methods that dont require input and output types
+ */
+class BaseNodeTypeLessWrapper : public QtNodes::NodeDelegateModel {
+public:
+    virtual bool isSource() = 0;
+
+    virtual void recalculate() = 0;
+};
+
+
 /**
  *
  * @tparam InPorts Types of input ports
@@ -18,7 +30,7 @@
  * @tparam AdInPort Type of additional input ports
  */
 template<tuple InPorts, tuple OutPorts, baseDataType AdInPort = BaseDataType>
-class BaseNode : public QtNodes::NodeDelegateModel {
+class BaseNode : public BaseNodeTypeLessWrapper {
 private:
     //templates
 
@@ -246,7 +258,7 @@ public:
 
     //this is needed for nodes that do not have interactive widget and input
     void outputConnectionCreated(const QtNodes::ConnectionId &) override {
-        updated();
+//        updated();
     }
 
     void inputConnectionCreated(const QtNodes::ConnectionId &connection) override {
@@ -267,6 +279,10 @@ public:
      * Will call compute
      */
     void updated() {
+        callCompute();
+    }
+
+    void recalculate() override {
         callCompute();
     }
 
@@ -312,6 +328,11 @@ public:
         modify();
         portsDeleted();
         dirtyInputConnections = false;
+    }
+
+    //source node is node with no inputs
+    bool isSource() override {
+        return std::tuple_size_v<InPorts> == 0;
     }
 };
 

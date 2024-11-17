@@ -1,0 +1,6 @@
+<RCC>
+  <qresource prefix="/">
+    <file>icons/breeze-dark/index.theme</file>
+    <file>DefaultStyle.json</file>
+  </qresource>
+</RCC>

@@ -30,14 +30,17 @@ set(BUILD_SHARED_LIBS ON)
 set(CGAL_DO_NOT_WARN_ABOUT_CMAKE_BUILD_TYPE ON)
 
 #debug options
-add_compile_options(-pedantic -fno-omit-frame-pointer -g -O1 -fno-inline)
+add_compile_options(-pedantic -fno-omit-frame-pointer -g -O0 -fno-inline)
 #add_compile_options(-fsanitize=address)
 #add_link_options(-fsanitize=address)
+
 
 include(src/CMakeLists.txt)
 
 target_compile_definitions(sigProc PUBLIC
         NODE_EDITOR_STATIC)
+
+target_sources(sigProc PRIVATE resources/resources.qrc)
 
 #link
 target_link_libraries(sigProc PRIVATE

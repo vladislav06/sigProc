@@ -36,6 +36,4 @@ public:
     }
 
     std::map<QString, std::shared_ptr<BaseDataType>> fields;
-
-
 };

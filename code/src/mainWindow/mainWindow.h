@@ -25,6 +25,8 @@ private:
     QtNodes::GraphicsView *view;
     DynamicDataFlowGraphModel *dataFlowGraphModel;
 
+    QString currentFile;
+
 public:
     explicit MainWindow(QWidget *parent = nullptr);
 
