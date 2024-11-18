@@ -1,8 +1,7 @@
 //
 // Created by vm on 24.30.10.
 //
-
-
+#pragma once
 
 #include <QtWidgets>
 #include "src/nodes/baseNode.h"

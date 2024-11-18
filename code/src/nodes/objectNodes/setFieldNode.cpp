@@ -3,15 +3,28 @@
 //
 
 #include <QBoxLayout>
+#include <QJsonArray>
 #include "setFieldNode.h"
 
 
 QJsonObject SetFieldNode::onSave() const {
-    return QJsonObject();
+    QJsonArray json;
+    for (auto field: fieldNames) {
+        json.push_back(field->text());
+    }
+    return {{"fields", json}};
 }
 
 bool SetFieldNode::onLoad(QJsonObject json) {
-    return false;
+    auto fiels = json["fields"];
+    if (fiels == QJsonValue::Undefined) {
+        return false;
+    }
+    auto far = fiels.toArray();
+    for (int i = 0; i < fieldNames.size(); i++) {
+        fieldNames[i]->setText(far[i].toString());
+    }
+    return true;
 }
 
 QString SetFieldNode::caption() const {

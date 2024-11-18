@@ -10,10 +10,6 @@ find_package(Qt6 COMPONENTS
         Gui
         Widgets
         Charts
-        PrintSupport
-        DataVisualization
-        3DCore
-        3DRender
         REQUIRED)
 
 find_package(CGAL COMPONENTS
@@ -47,12 +43,8 @@ target_link_libraries(sigProc PRIVATE
         Qt::Core
         Qt::Gui
         Qt::Widgets
-        Qt::PrintSupport
         Qt::Charts
         #QXlsx::QXlsx
-        Qt::DataVisualization
-        Qt::3DCore
-        Qt::3DRender
         CGAL::CGAL_Core
         fftw3
         gtest_main
