@@ -10,7 +10,6 @@ class FftNode
         : public BaseNode<std::tuple<ArrayDataType<double> >, std::tuple<ArrayDataType<double>, ArrayDataType<double>, ArrayDataType<double>, ArrayDataType<double>>> {
 public:
 
-
     QJsonObject onSave() const override;
 
     bool onLoad(QJsonObject json) override;

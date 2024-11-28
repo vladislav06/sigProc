@@ -66,9 +66,10 @@ public:
             if (array == nullptr) {
                 continue;
             }
-            QLineSeries *series = new QLineSeries();
+            auto *series = new QLineSeries();
             QList<QPointF> myList;
-            myList.reserve(array->get().size());
+            auto size = array->get().size();
+            myList.reserve(size);
             for (int i = 0; i < array->get().size(); i++) {
                 myList.append(QPointF(i, array->get()[i]));
                 if (array->get()[i] > maxY) {
@@ -81,6 +82,7 @@ public:
             if (array->get().size() > maxX) {
                 maxX = array->get().size();
             }
+
             series->append(myList);
             chart->addSeries(series);
 

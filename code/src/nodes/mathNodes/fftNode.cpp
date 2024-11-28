@@ -34,8 +34,8 @@ FftNode::compute(std::tuple<std::shared_ptr<ArrayDataType<double>>> params,
 
     auto array = Fft::calculateFft(std::get<0>(params)->get());
 
-    auto amplitude = std::make_shared<ArrayDataType<double>>(std::vector<double>(array.size() / 2));
-    auto phase = std::make_shared<ArrayDataType<double>>(std::vector<double>(array.size() / 2));
+    auto amplitude = std::make_shared<ArrayDataType<double>>(std::vector<double>((array.size() / 2)+1));
+    auto phase = std::make_shared<ArrayDataType<double>>(std::vector<double>((array.size() / 2)+1));
     auto real = std::make_shared<ArrayDataType<double>>(std::vector<double>(array.size()));
     auto imag = std::make_shared<ArrayDataType<double>>(std::vector<double>(array.size()));
     if (array.size() < 2) {
@@ -48,7 +48,10 @@ FftNode::compute(std::tuple<std::shared_ptr<ArrayDataType<double>>> params,
     }
 
     for (size_t i = array.size() / 2; i < array.size(); i++) {
-        auto index = i - (array.size() / 2);
+        int index = (i - (array.size() / 2));
+        assert(index < amplitude->get().size());
+        assert(index < imag->get().size());
+
         amplitude->get()[index] = sqrt(array[i][0] * array[i][0] + array[i][1] * array[i][1]);
         imag->get()[index] = atan2(array[i][1], array[i][0]);
     }

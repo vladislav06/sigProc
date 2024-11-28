@@ -27,8 +27,8 @@ set(CGAL_DO_NOT_WARN_ABOUT_CMAKE_BUILD_TYPE ON)
 
 #debug options
 add_compile_options(-pedantic -fno-omit-frame-pointer -g -O0 -fno-inline)
-#add_compile_options(-fsanitize=address)
-#add_link_options(-fsanitize=address)
+add_compile_options(-fsanitize=address)
+add_link_options(-fsanitize=address)
 
 
 include(src/CMakeLists.txt)

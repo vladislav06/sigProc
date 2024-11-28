@@ -9,6 +9,7 @@
 #include "generators/baseGenerator.h"
 #include "generators/sineGenerator.h"
 #include "generators/squareGenerator.h"
+#include "src/nodes/dataInputNodes/generators/offsetGenerator.h"
 
 class GeneratorNode : public BaseNode<std::tuple<>, std::tuple<ArrayDataType<double>>> {
 public:
@@ -34,7 +35,8 @@ public slots:
 private:
     std::vector<BaseGenerator *> generators = {
             new SineGenerator(),
-            new SquareGenerator()
+            new SquareGenerator(),
+            new OffsetGenerator()
     };
     BaseGenerator *selectedGenerator = generators[0];
     QWidget *base = nullptr;

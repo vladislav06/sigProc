@@ -129,15 +129,16 @@ private:
 
     template<typename OutTuple, std::size_t I = 0>
     std::shared_ptr<QtNodes::NodeData> getOutNodeData(std::vector<std::shared_ptr<BaseNodePort>> &ports, int index) {
+
         if constexpr (I < std::tuple_size_v<OutTuple>) {
 
             using portType = std::tuple_element_t<I, OutTuple>;
 
             if (I == index) {
-                auto nodeData = std::dynamic_pointer_cast<NodePort<portType>>(ports.at(I))->data;
-                return nodeData;
+                auto out = std::dynamic_pointer_cast<NodePort<portType>>(ports.at(I))->data;
+                return out;
             } else {
-                getOutNodeData<OutTuple, I + 1>(ports, index);
+                return getOutNodeData<OutTuple, I + 1>(ports, index);
             }
         }
         return {};

@@ -34,6 +34,7 @@ bool GeneratorNode::onLoad(QJsonObject json) {
 
             selectedGenerator->onLoad(jsonData);
             comboBox->setCurrentIndex(i);
+            onSelect(i);
             updated();
             return true;
         }
@@ -58,6 +59,9 @@ QWidget *GeneratorNode::embeddedWidget() {
 
         holder->setLayout(new QBoxLayout(QBoxLayout::TopToBottom));
 
+        base->setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum));
+        holder->setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum));
+
         for (int i = 0; i < generators.size(); i++) {
 
             comboBox->addItem(generators[i]->getName(), i);
@@ -77,10 +81,17 @@ void GeneratorNode::onSelect(int index) {
     selectedGenerator = generators[comboBox->itemData(index).toInt()];
     //clear holder without actually deleting any widgets
     QLayoutItem *item;
-    while ((item = holder->layout()->takeAt(0)) != nullptr) {
-        holder->layout()->removeItem(item);
+    for (int i = 0; i < holder->layout()->count(); i++) {
+        auto w = holder->layout()->takeAt(i)->widget();
+//        holder->layout()->removeWidget(w);
+        w->hide();
     }
+//    holder->updateGeometry();
+    holder->layout()->invalidate();
+
+
     holder->layout()->addWidget(selectedGenerator->getWidgets());
+    selectedGenerator->getWidgets()->show();
     connect(selectedGenerator, &BaseGenerator::updated, this, &GeneratorNode::onUpdate);
     updated();
 }

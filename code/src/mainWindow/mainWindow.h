@@ -16,6 +16,7 @@
 #include "src/nodes/previewNodes/graphPreviewNode.h"
 #include "src/nodes/dataInputNodes/generatorNode.h"
 #include "src/nodes/mathNodes/fftNode.h"
+#include "src/nodes/mathNodes/fmModulationNode.h"
 #include <QtNodes/DataFlowGraphicsScene>
 #include <QtNodes/GraphicsView>
 #include <QtNodes/NodeDelegateModelRegistry>
@@ -41,6 +42,7 @@ public:
         nodeRegistry->registerModel<WaveformDataOutputNode>("Output");
         nodeRegistry->registerModel<MathNode<double>>("Math");
         nodeRegistry->registerModel<FftNode>("Math");
+        nodeRegistry->registerModel<FmModulationNode>("Math");
 
         nodeRegistry->registerModel<SetFieldNode>("Object");
         nodeRegistry->registerModel<ObjectCreateNode>("Object");
