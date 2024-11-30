@@ -4,16 +4,18 @@
 
 #pragma once
 
+#include <iostream>
 #include "baseDataType.h"
 #include "nodeDataTypeType.h"
+#include "src/utils/stringType.h"
 
 /**
  * Holds variable length array
  */
-template<typename T>
+template<typename T, StringType name = "">
 class ArrayDataType : public BaseDataType {
 public:
-    using DataType = NodeDataTypeType<"Array", "array">;
+    using DataType = NodeDataTypeType<"Array", name + " array">;
     DataType nodeType;
 
     ArrayDataType()
@@ -21,6 +23,8 @@ public:
 
     ArrayDataType(std::vector<T> const number)
             : data(number) {}
+
+    ~ArrayDataType() override {}
 
 
     QtNodes::NodeDataType type() const override { return nodeType.getNodeDataType(); }

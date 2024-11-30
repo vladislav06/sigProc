@@ -13,6 +13,8 @@
 #include "operations/baseOperation.h"
 #include "operations/additionOperation.h"
 #include "operations/subtractionOperation.h"
+#include "operations/multiplicationOperation.h"
+#include "operations/divisionOperation.h"
 
 #define TYPE ArrayDataType<T>
 
@@ -136,7 +138,13 @@ private:
             }},
             {.name="Math", .ops={
                     new SubtractionOperation<TYPE >(),
-            }}
+            }},
+            {.name="Math", .ops={
+                    new MultiplicationOperation<TYPE >(),
+            }},
+            {.name="Math", .ops={
+                    new DivisionOperation<TYPE >(),
+            }},
     };
 };
 

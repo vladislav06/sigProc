@@ -38,11 +38,15 @@ QWidget *PreviewNode::embeddedWidget() {
 
 std::tuple<std::shared_ptr<BaseDataType>> PreviewNode::compute(std::tuple<std::shared_ptr<BaseDataType>> params,
                                                                std::vector<std::shared_ptr<BaseDataType>> adParams) {
+    parameters = params;
     auto obj = std::get<0>(params);
+    return params;
+}
+
+void PreviewNode::afterCompute() {
+    auto obj = std::get<0>(parameters);
     if (obj == nullptr) {
         text->setPlainText("");
-        return params;
     }
     text->setPlainText(obj->toString());
-    return params;
 }

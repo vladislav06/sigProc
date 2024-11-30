@@ -10,16 +10,47 @@
 #include "iostream"
 #include "src/nodes/dataTypes/arrayDataType.h"
 #include "src/nodes/nodePort.h"
+#include "src/threadPool/threadPool.h"
 
 
 /**
  * BaseNode base class with some methods that dont require input and output types
  */
 class BaseNodeTypeLessWrapper : public QtNodes::NodeDelegateModel {
+Q_OBJECT
+
 public:
+    BaseNodeTypeLessWrapper();
+
+    ~BaseNodeTypeLessWrapper() override {
+        uiThreadSemaphore.release();
+    };
+
     virtual bool isSource() = 0;
 
     virtual void recalculate() = 0;
+
+    // guards ui thread
+    std::binary_semaphore uiThreadSemaphore{1};
+
+signals:
+
+    void callAfterCompute();
+
+public slots:
+
+
+    void afterComputeSlot() {
+        afterCompute();
+        uiThreadSemaphore.release();
+    };
+
+public:
+    /**
+     * This method is called in ui thread after compute method has returned
+     * update ui elements in this method
+     */
+    virtual void afterCompute() {};
 };
 
 
@@ -31,6 +62,16 @@ public:
  */
 template<tuple InPorts, tuple OutPorts, baseDataType AdInPort = BaseDataType>
 class BaseNode : public BaseNodeTypeLessWrapper {
+public:
+    BaseNode() = default;
+
+    ~BaseNode() override {
+        //wait until job is done
+        std::cout << "Deleted" << std::endl;
+        computeThreadSemaphore.acquire();
+        computeThreadSemaphore.release();
+    }
+
 private:
     //templates
 
@@ -90,6 +131,13 @@ private:
     int additionalInPorts = 0;
 
     bool dirtyInputConnections = false;
+
+    // guards compute thread until job is done
+    std::binary_semaphore computeThreadSemaphore{1};
+
+
+    bool parallelization = true;
+
     //more templates
 
     /**
@@ -105,13 +153,19 @@ private:
         if constexpr (I < std::tuple_size_v<tup>) {
             if (I == index) {
                 using portType = std::tuple_element_t<I, tup>;
-                auto dataType = std::dynamic_pointer_cast<portType>(data);
+                auto dataType = std::static_pointer_cast<portType>(data);
+                if (dataType == nullptr && data != nullptr) {
+                    std::cout << "Unable to cast data!: " << typeid(data.get()).name() << std::endl;
+                }
                 std::dynamic_pointer_cast<NodePort<portType>>(ports.at(I))->data = dataType;
             }
             setInNodePortData<tup, I + 1>(ports, data, index);
         } else if (index >= std::tuple_size_v<tup> && index < std::tuple_size_v<tup> + additionalInPorts) {
             using portType = AdInPort;
-            auto dataType = std::dynamic_pointer_cast<portType>(data);
+            auto dataType = std::static_pointer_cast<portType>(data);
+            if (dataType == nullptr && data != nullptr) {
+                std::cout << "Unable to cast data!: " << typeid(data.get()).name() << std::endl;
+            }
             std::dynamic_pointer_cast<NodePort<portType>>(ports.at(index))->data = dataType;
         }
 
@@ -181,10 +235,7 @@ public:
     }
 
     void setInData(std::shared_ptr<QtNodes::NodeData> nodeData, const QtNodes::PortIndex portIndex) override {
-//        if (nodeData != nullptr) {
-        // assign nodeData to specified by portIndex index at inNodePorts
         setInNodePortData<InPorts>(inNodePorts, nodeData, portIndex);
-//        }
         callCompute();
     }
 
@@ -194,23 +245,45 @@ public:
         for (int i = std::tuple_size_v<InPorts>; i < std::tuple_size_v<InPorts> + additionalInPorts; i++) {
             adParams.push_back(std::dynamic_pointer_cast<NodePort<AdInPort>>(inNodePorts.at(i))->data);
         }
+        if (parallelization) {
+            computeThreadSemaphore.acquire();
+            ThreadPool::get().queueJob([this, adParams]() {
+                uiThreadSemaphore.release();
+                auto ret = compute(vectorToTuple<InPorts, std::tuple_size_v<InPorts>>(inNodePorts), adParams);
 
-        auto ret = compute(vectorToTuple<InPorts, std::tuple_size_v<InPorts>>(inNodePorts), adParams);
+                auto tempOutNodePorts = outNodePorts;
+                outNodePorts = generateNodePorts<OutPorts>();
+                setOutNodePortData<typename WrappedTupleElements<OutPorts>::type>(outNodePorts, ret);
 
-        auto tempOutNodePorts = outNodePorts;
-        outNodePorts = generateNodePorts<OutPorts>();
-        setOutNodePortData<typename WrappedTupleElements<OutPorts>::type>(outNodePorts, ret);
+                for (int i = 0; i < outNodePorts.size(); i++) {
+                    if (tempOutNodePorts[i] != outNodePorts[i]) {
+                        Q_EMIT dataUpdated(i);
+                    }
+                }
+                Q_EMIT callAfterCompute();
+                computeThreadSemaphore.release();
+            });
+        } else {
+            auto ret = compute(vectorToTuple<InPorts, std::tuple_size_v<InPorts>>(inNodePorts), adParams);
 
-        for (int i = 0; i < outNodePorts.size(); i++) {
-            if (tempOutNodePorts[i] != outNodePorts[i]) {
-                Q_EMIT dataUpdated(i);
+            auto tempOutNodePorts = outNodePorts;
+            outNodePorts = generateNodePorts<OutPorts>();
+            setOutNodePortData<typename WrappedTupleElements<OutPorts>::type>(outNodePorts, ret);
+
+            for (int i = 0; i < outNodePorts.size(); i++) {
+                if (tempOutNodePorts[i] != outNodePorts[i]) {
+                    Q_EMIT dataUpdated(i);
+                }
             }
         }
+
     }
 
 
+public:
+
     std::shared_ptr<QtNodes::NodeData> outData(const QtNodes::PortIndex port) override {
-        auto nodeData = getOutNodeData<OutPorts>(outNodePorts, port);
+        std::shared_ptr<QtNodes::NodeData> nodeData = getOutNodeData<OutPorts>(outNodePorts, port);
         return nodeData;
     }
 
@@ -218,6 +291,7 @@ public:
 
     /**
      * Must perform calculations based on input tuple, pointers in tuple might be nullptr
+     * This method is called in non ui thread, do not update ui in this method.
      * @return newly constructed shred_ptr
      */
     virtual WrappedTupleElements<OutPorts>::type

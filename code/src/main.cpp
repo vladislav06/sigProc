@@ -6,6 +6,7 @@
 #include "mainWindow/mainWindow.h"
 
 int main(int argc, char *argv[]) {
+    ThreadPool::get().start();
     QApplication app(argc, argv);
     MainWindow mainWidget;
     mainWidget.show();

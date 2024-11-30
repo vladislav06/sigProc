@@ -24,7 +24,10 @@ public:
     compute(std::tuple<std::shared_ptr<BaseDataType>> params,
             std::vector<std::shared_ptr<BaseDataType>> adParams) override;
 
+    void afterCompute() override;
+
 private:
+    std::tuple<std::shared_ptr<BaseDataType>> parameters;
     QWidget *base = nullptr;
     QPlainTextEdit *text = nullptr;
 };

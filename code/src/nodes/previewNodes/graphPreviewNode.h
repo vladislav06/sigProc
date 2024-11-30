@@ -57,33 +57,79 @@ public:
     }
 
     std::tuple<> compute(std::tuple<> params, std::vector<std::shared_ptr<ArrayDataType<T>>> adParams) override {
-        chart->removeAllSeries();
-        int maxX = 0;
-        double maxY = INT32_MIN;
-        double minY = INT32_MAX;
+        maxX = 0;
+        maxY = INT32_MIN;
+        minY = INT32_MAX;
+
+        //clear previous array
+        for (auto &pointList: pointLists) {
+            pointList.clear();
+        }
+        pointLists.clear();
 
         for (std::shared_ptr<ArrayDataType<T>> array: adParams) {
             if (array == nullptr) {
                 continue;
             }
-            auto *series = new QLineSeries();
-            QList<QPointF> myList;
             auto size = array->get().size();
-            myList.reserve(size);
-            for (int i = 0; i < array->get().size(); i++) {
-                myList.append(QPointF(i, array->get()[i]));
-                if (array->get()[i] > maxY) {
-                    maxY = array->get()[i];
+
+            // compress entire array to 1000 points , each point is local maximum in 1 sample which is size/1000
+            QList<QPointF> list;
+            size_t pointCount = 500;
+            size_t sampleSize = size < pointCount ? 1 : (size / pointCount);
+            list.reserve(pointCount);
+
+            //local min max
+            double LminY = INT32_MAX;
+            double LmaxY = INT32_MIN;
+            double prevSAvg = 0;
+            int i = 0;
+            for (; i < array->get().size(); i++) {
+                if (array->get()[i] > LmaxY) {
+                    LmaxY = array->get()[i];
                 }
-                if (array->get()[i] < minY) {
-                    minY = array->get()[i];
+                if (array->get()[i] < LminY) {
+                    LminY = array->get()[i];
+                }
+                if (i % sampleSize == 0) {
+                    if (((LmaxY + LminY) / 2) > prevSAvg) {
+                        list.append(QPointF(i, LmaxY));
+                    } else {
+                        list.append(QPointF(i, LminY));
+                    }
+
+                    //global min max
+                    if (LmaxY > maxY) {
+                        maxY = LmaxY;
+                    }
+                    if (LminY < minY) {
+                        minY = LminY;
+                    }
+                    prevSAvg = ((LmaxY + LminY) / 2);
+
+                    LminY = INT32_MAX;
+                    LmaxY = INT32_MIN;
                 }
             }
-            if (array->get().size() > maxX) {
-                maxX = array->get().size();
+            //append remaining point
+            for (int n = i; i < array->get().size(); n++) {
+                list.append(QPointF(n, array->get()[i]));
             }
 
-            series->append(myList);
+            if (array->get().size()-1 > maxX) {
+                maxX = array->get().size()-1;
+            }
+            pointLists.push_back(list);
+        }
+        return {};
+    }
+
+    void afterCompute() override {
+        chart->removeAllSeries();
+
+        for (const auto &pointList: pointLists) {
+            auto *series = new QLineSeries();
+            series->append(pointList);
             chart->addSeries(series);
 
             series->attachAxis(xAxis);
@@ -94,8 +140,6 @@ public:
         yAxis->setMin(minY);
         xAxis->setMax(maxX);
         emit this->embeddedWidgetSizeUpdated();
-
-        return {};
     }
 
     void onInputConnected(int index) override {
@@ -110,6 +154,11 @@ public:
     }
 
 private:
+    std::vector<QList<QPointF>> pointLists;
+    int maxX = 0;
+    double maxY = INT32_MIN;
+    double minY = INT32_MAX;
+
     QWidget *base = nullptr;
     QChartView *view = nullptr;
     QChart *chart = nullptr;
