@@ -67,7 +67,6 @@ public:
 
     ~BaseNode() override {
         //wait until job is done
-        std::cout << "Deleted" << std::endl;
         computeThreadSemaphore.acquire();
         computeThreadSemaphore.release();
     }

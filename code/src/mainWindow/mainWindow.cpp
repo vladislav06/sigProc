@@ -21,9 +21,22 @@ MainWindow::MainWindow(QWidget *parent) {
     connect(this->actionOpen, &QAction::triggered, this, &MainWindow::onLoad);
     connect(this->actionReload, &QAction::triggered, dataFlowGraphModel, &DynamicDataFlowGraphModel::trigger);
 
+    connect(dataFlowGraphModel, &DynamicDataFlowGraphModel::nodePositionUpdated, this, [this]() {
+        setDirty(true);
+    });
+    connect(dataFlowGraphModel, &DynamicDataFlowGraphModel::nodeUpdated, this, [this]() {
+        setDirty(true);
+    });
+    connect(dataFlowGraphModel, &DynamicDataFlowGraphModel::nodeCreated, this, [this]() {
+        setDirty(true);
+    });
+    connect(dataFlowGraphModel, &DynamicDataFlowGraphModel::nodeDeleted, this, [this]() {
+        setDirty(true);
+    });
+
 }
 
-void MainWindow::onSave(bool) {
+void MainWindow::onSave() {
     QString name;
     if (currentFile.isEmpty()) {
         name = QFileDialog::getSaveFileName(this, tr("Save File"), QDir::currentPath(),
@@ -47,9 +60,11 @@ void MainWindow::onSave(bool) {
     auto json = dataFlowGraphModel->save();
     QJsonDocument doc(json);
     jsonFile.write(doc.toJson());
+
+    setDirty(false);
 }
 
-void MainWindow::onLoad(bool) {
+void MainWindow::onLoad() {
     QString name = QFileDialog::getOpenFileName(this, tr("Open File"), QDir::currentPath(), tr("SigProc file (*.spf)"));
     if (name == "") {
         return;
@@ -62,7 +77,52 @@ void MainWindow::onLoad(bool) {
     }
 
     auto doc = QJsonDocument().fromJson(jsonFile.readAll());
+
+    //delete all nodes in graph before loading, or else graph will not be loaded correctly
+    for (auto node: dataFlowGraphModel->allNodeIds()) {
+        dataFlowGraphModel->deleteNode(node);
+    }
     dataFlowGraphModel->load(doc.object());
+
     currentFile = name;
-    setWindowTitle(currentFile);
+
+    QTimer::singleShot(0, [this] {
+        setDirty(true);
+        setDirty(false);
+    });
+}
+
+void MainWindow::setDirty(bool dirty) {
+    //change title only on dirty state change
+    if (dirty && this->dirty != dirty) {
+        QString newTitle = "";
+        for (auto c: currentFile) {
+            // use undocumented surrogate plane to print italic chars
+            char cc = c.toLatin1();
+            if (std::isalpha(cc)) {
+                if (std::isupper(cc)) {
+                    // italic plane 0x1D434 - italic A
+                    newTitle.append(QChar::fromUcs4(0x1D434 + (cc - 'A')));
+                } else {
+                    //handle special cases
+                    switch (cc) {
+                        //h is not present in this plane
+                        case 'h':
+                            newTitle.append(QChar::fromUcs4(0x210E));
+                            break;
+                        default:
+                            // italic plane 0x1D44E - italic a
+                            newTitle.append(QChar::fromUcs4(0x1D44E + (cc - 'a')));
+                    }
+                }
+            } else {
+                newTitle.append(c);
+            }
+        }
+        newTitle.append('*');
+        setWindowTitle(newTitle);
+    } else if (!dirty && this->dirty != dirty) {
+        setWindowTitle(currentFile);
+    }
+    this->dirty = dirty;
 }

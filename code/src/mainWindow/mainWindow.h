@@ -28,8 +28,8 @@ private:
     QtNodes::DataFlowGraphicsScene *scene;
     QtNodes::GraphicsView *view;
     DynamicDataFlowGraphModel *dataFlowGraphModel;
-
     QString currentFile;
+    bool dirty;
 
 public:
     explicit MainWindow(QWidget *parent = nullptr);
@@ -43,19 +43,19 @@ public:
         nodeRegistry->registerModel<MathNode<double>>("Math");
         nodeRegistry->registerModel<FftNode>("Math");
         nodeRegistry->registerModel<FmModulationNode>("Math");
-
         nodeRegistry->registerModel<SetFieldNode>("Object");
         nodeRegistry->registerModel<ObjectCreateNode>("Object");
         nodeRegistry->registerModel<PreviewNode>("Output");
         nodeRegistry->registerModel<GraphPreviewNode<double>>("Output");
         nodeRegistry->registerModel<GeneratorNode>("Input");
-
     }
 
 private:
-    void onSave(bool);
+    void onSave();
 
-    void onLoad(bool);
+    void onLoad();
+
+    void setDirty(bool dirty);
 
 };
 

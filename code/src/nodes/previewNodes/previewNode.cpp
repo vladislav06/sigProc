@@ -47,6 +47,7 @@ void PreviewNode::afterCompute() {
     auto obj = std::get<0>(parameters);
     if (obj == nullptr) {
         text->setPlainText("");
+        return;
     }
     text->setPlainText(obj->toString());
 }
