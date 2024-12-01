@@ -19,7 +19,7 @@ public:
         amplitude = new QDoubleSpinBox();
         offset = new QDoubleSpinBox();
         phase = new QDoubleSpinBox();
-        length = new QDoubleSpinBox();
+        length = new QSpinBox();
         samplingRate = new QSpinBox();
         samplingRate->setMinimum(1);
         std::vector<std::pair<QString, std::variant<QSpinBox *, QDoubleSpinBox *>>> pairs = {{"frequency",     freq},
@@ -85,14 +85,13 @@ public:
         length->setValue(json["length"].toInt(10));
         samplingRate->setValue(json["samplingRate"].toInt(10));
     }
-
 private:
     QWidget *base = nullptr;
     QDoubleSpinBox *freq = nullptr;
     QDoubleSpinBox *amplitude = nullptr;
     QDoubleSpinBox *offset = nullptr;
     QDoubleSpinBox *phase = nullptr;
-    QDoubleSpinBox *length = nullptr;
+    QSpinBox *length = nullptr;
     QSpinBox *samplingRate = nullptr;
 
 };

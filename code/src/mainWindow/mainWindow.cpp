@@ -79,9 +79,13 @@ void MainWindow::onLoad() {
     auto doc = QJsonDocument().fromJson(jsonFile.readAll());
 
     //delete all nodes in graph before loading, or else graph will not be loaded correctly
-    for (auto node: dataFlowGraphModel->allNodeIds()) {
+    auto ids = dataFlowGraphModel->allNodeIds();
+    for (auto node: ids) {
         dataFlowGraphModel->deleteNode(node);
     }
+    assert(dataFlowGraphModel->allNodeIds().size() == 0);
+
+
     dataFlowGraphModel->load(doc.object());
 
     currentFile = name;

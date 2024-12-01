@@ -27,7 +27,7 @@ public:
 
     virtual void onLoad(QJsonObject json) = 0;
 
-    virtual  ~BaseGenerator() {};
+     ~BaseGenerator() override = default;
 
 public slots:
 

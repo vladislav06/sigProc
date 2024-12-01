@@ -203,6 +203,7 @@ public:
     [[nodiscard]] unsigned int nPorts(QtNodes::PortType portType) const override {
         switch (portType) {
             case QtNodes::PortType::In:
+                assert(std::tuple_size_v<InPorts> + additionalInPorts==inNodePorts.size());
                 return std::tuple_size_v<InPorts> + additionalInPorts;
                 break;
             case QtNodes::PortType::Out:
@@ -385,7 +386,7 @@ public:
      * Will remove input port with type AdInPort, removes only added ports
      * @param modify must modify node widget structure
      */
-    void removeInputPort(int index, std::function<void(void)> modify) {
+    void removeInputPort(int index, const std::function<void(void)> &modify) {
         if (additionalInPorts == 0) {
             return;
         }
@@ -394,6 +395,7 @@ public:
         }
         dirtyInputConnections = true;
 
+
         portsAboutToBeDeleted(QtNodes::PortType::In, index, index);
 
         inNodePorts.erase(inNodePorts.begin() + index);
@@ -401,6 +403,9 @@ public:
 
         modify();
         portsDeleted();
+
+
+
         dirtyInputConnections = false;
     }
 

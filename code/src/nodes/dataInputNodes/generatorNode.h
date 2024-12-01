@@ -26,6 +26,8 @@ public:
 
     QWidget *embeddedWidget() override;
 
+    ~GeneratorNode() override;
+
 public slots:
 
     void onSelect(int index);

@@ -63,7 +63,6 @@ QWidget *GeneratorNode::embeddedWidget() {
         holder->setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum));
 
         for (int i = 0; i < generators.size(); i++) {
-
             comboBox->addItem(generators[i]->getName(), i);
         }
         connect(comboBox, &QComboBox::activated, this, &GeneratorNode::onSelect);
@@ -72,21 +71,23 @@ QWidget *GeneratorNode::embeddedWidget() {
         base->layout()->addWidget(holder);
 
         holder->layout()->addWidget(selectedGenerator->getWidgets());
+        selectedGenerator->onLoad({});
         connect(selectedGenerator, &BaseGenerator::updated, this, &GeneratorNode::onUpdate);
     }
     return base;
 }
 
 void GeneratorNode::onSelect(int index) {
+
+    auto data = selectedGenerator->onSave();
     selectedGenerator = generators[comboBox->itemData(index).toInt()];
+    selectedGenerator->onLoad(data);
     //clear holder without actually deleting any widgets
     QLayoutItem *item;
     for (int i = 0; i < holder->layout()->count(); i++) {
         auto w = holder->layout()->takeAt(i)->widget();
-//        holder->layout()->removeWidget(w);
         w->hide();
     }
-//    holder->updateGeometry();
     holder->layout()->invalidate();
 
 
@@ -98,5 +99,11 @@ void GeneratorNode::onSelect(int index) {
 
 void GeneratorNode::onUpdate() {
     updated();
+}
+
+GeneratorNode::~GeneratorNode() {
+    for (auto generator: generators) {
+        delete generator;
+    }
 }
 
