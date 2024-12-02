@@ -4,10 +4,14 @@
 
 #pragma once
 
-#include <iostream>
 #include "baseDataType.h"
 #include "nodeDataTypeType.h"
 #include "src/utils/stringType.h"
+#include "src/utils/concepts.h"
+//template<typename V>
+//concept isBaseDataType = requires(V a) {
+//    a.toString();
+//};
 
 /**
  * Holds variable length array
@@ -27,7 +31,9 @@ public:
     ~ArrayDataType() override {}
 
 
-    QtNodes::NodeDataType type() const override { return nodeType.getNodeDataType(); }
+    QtNodes::NodeDataType type() const override {
+        return nodeType.getNodeDataType();
+    }
 
     /**
      * Returns copy of internal array;
@@ -47,7 +53,12 @@ public:
     QString toString() override {
         QString str = "[";
         for (int i = 0; i < data.size(); i++) {
-            str += std::to_string(data[i]);
+
+            if constexpr (baseDataType<T>) {
+                str += data[i].toString();
+            } else {
+                str += std::to_string(data[i]);
+            }
             if (i != data.size() - 1) {
                 str += ", ";
             }
@@ -57,6 +68,7 @@ public:
     }
 
 private:
+
     std::vector<T> data;
 };
 

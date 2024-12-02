@@ -16,7 +16,7 @@ find_package(CGAL COMPONENTS
         Core
         REQUIRED)
 
-find_package(QtNodes)
+#find_package(QtNodes)
 
 #settings
 set(CMAKE_AUTOMOC ON)
@@ -32,6 +32,8 @@ add_link_options(-fsanitize=address)
 
 
 include(src/CMakeLists.txt)
+#include(lib/nodeeditor/CMakeLists.txt)
+add_subdirectory(lib/nodeeditor)
 
 target_compile_definitions(sigProc PUBLIC
         NODE_EDITOR_STATIC)
@@ -48,6 +50,8 @@ target_link_libraries(sigProc PRIVATE
         CGAL::CGAL_Core
         fftw3
         gtest_main
-        QtNodes
+        QtNodes::QtNodes
 )
+
+
 

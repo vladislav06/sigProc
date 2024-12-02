@@ -20,57 +20,42 @@ QString WaveformDataInputNode::name() const {
 }
 
 QWidget *WaveformDataInputNode::embeddedWidget() {
-    if (base == nullptr) {
-        base = new QWidget();
-        ui.setupUi(base);
-
-        connect(ui.filePath, &QLineEdit::textChanged, this, &WaveformDataInputNode::valueChanged);
-        connect(ui.openExplorer, &QPushButton::pressed, this, &WaveformDataInputNode::onButonPress);
-    }
-    return base;
-}
-
-
-void WaveformDataInputNode::valueChanged(QString str) {
-    updated();
-}
-
-void WaveformDataInputNode::onButonPress() {
-    QFileDialog dialog(base);
-
-    dialog.setFileMode(QFileDialog::ExistingFile);
-    dialog.setDirectory(QDir::currentPath());
-
-    QStringList names;
-    if (dialog.exec()) {
-        names = dialog.selectedFiles();
-    }
-    assert(names.size() <= 1);
-    if (!names.empty()) {
-        ui.filePath->setText(names.first());
-    }
+    return nullptr;
 }
 
 QJsonObject WaveformDataInputNode::onSave() const {
-    return {
-            {"path", ui.filePath->text()},
-    };
+    return {};
 }
 
 bool WaveformDataInputNode::onLoad(QJsonObject json) {
-    auto path = json["path"];
-    if (path == QJsonValue::Undefined) {
-        return false;
-    }
-    ui.filePath->setText(path.toString());
+
     return true;
 }
 
 std::tuple<std::shared_ptr<ArrayDataType<double>>>
-WaveformDataInputNode::compute(std::tuple<> params, std::vector<std::shared_ptr<BaseDataType>> adParams) {
+WaveformDataInputNode::compute(std::tuple<std::shared_ptr<FileDataType>> params,
+                               std::vector<std::shared_ptr<BaseDataType>> adParams) {
+    auto file = std::get<0>(params);
+
+    if (file == nullptr) {
+        return {};
+    }
+
     //load file in to ArrayDataType
-    auto arr = loadFileWFF(ui.filePath->text());
-    return {arr};}
+    auto array = std::make_shared<ArrayDataType<double>>();
+
+    std::ifstream fin;
+    if (!file->inputStream(fin)) {
+        return {};
+    }
+    double ff = 0;
+
+    while (fin >> ff) {
+        array->get().push_back(ff);
+    }
+    return array;
+}
+
 
 
 
