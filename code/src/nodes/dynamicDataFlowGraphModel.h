@@ -4,11 +4,14 @@
 #pragma once
 
 #include <QtNodes/internal/DataFlowGraphModel.hpp>
+#include "QtNodes/GraphicsView"
 
 /**
  * Extension of DataFlowGraphModel which allows connection between nodes if NodeDataType is with the same base
  */
 class DynamicDataFlowGraphModel : public QtNodes::DataFlowGraphModel {
+Q_OBJECT
+
 public:
     explicit DynamicDataFlowGraphModel(std::shared_ptr<QtNodes::NodeDelegateModelRegistry> registry);
 
@@ -17,9 +20,14 @@ public:
 
     bool willHaveCycle(QtNodes::ConnectionId connectionId) const;
 
+
 public slots:
 
     void onNodeCreation(QtNodes::NodeId nodeId);
 
     void trigger();
+
+signals:
+
+    void setView(QtNodes::GraphicsView *graphView);
 };

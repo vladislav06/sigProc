@@ -5,7 +5,7 @@
 
 #include "baseDataType.h"
 #include "fstream"
-
+#include "QFile"
 class FileDataType : public BaseDataType {
 public:
     using DataType = NodeDataTypeType<"File", "file">;
@@ -13,6 +13,7 @@ public:
 
     explicit FileDataType(QString path) : filePath(std::move(path)) {}
 
+    ~FileDataType() override = default;
 
     QtNodes::NodeDataType type() const override {
         return nodeType.getNodeDataType();

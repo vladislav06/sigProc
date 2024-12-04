@@ -16,6 +16,8 @@ public:
         return nodeType.getNodeDataType();
     }
 
+    ~ObjectDataType() override = default;
+
     QString toString() override {
 
 

@@ -5,6 +5,7 @@
 #include "baseNode.h"
 #include "queue"
 #include "QTimer"
+#include "foreachNode.h"
 
 DynamicDataFlowGraphModel::DynamicDataFlowGraphModel(std::shared_ptr<QtNodes::NodeDelegateModelRegistry> registry)
         : DataFlowGraphModel(std::move(registry)) {
@@ -39,9 +40,33 @@ bool DynamicDataFlowGraphModel::connectionPossible(const QtNodes::ConnectionId c
     auto typesOut = typeOut.id.split("_");
     auto typesIn = typeIn.id.split("_");
 
-    //check if out has same type as topmost in
+    //check if output type is fully present in input from the start
+    bool contains = false;
+    int o = 0;
+    int i = 0;
+    while (true) {
+        if (o > typesOut.size() && i > typesIn.size()) {
+            contains = true;
+            break;
+        }
+        if (o >= typesOut.size()) {
+            contains = false;
+            break;
+        }
+        if (i >= typesIn.size()) {
+            contains = true;
+            break;
+        }
+        if (typesOut[o] == typesIn[i]) {
+            o++;
+            i++;
+        } else {
+            contains = false;
+            break;
+        }
+    }
 
-    if (typesOut.contains(typesIn.back())
+    if (contains
         && portVacant(QtNodes::PortType::Out) && portVacant(QtNodes::PortType::In)) {
         if (willHaveCycle(connectionId)) {
             return false;
@@ -145,6 +170,15 @@ void DynamicDataFlowGraphModel::onNodeCreation(const QtNodes::NodeId nodeId) {
             Q_EMIT  this->nodeUpdated(nodeId);
         });
     });
+
+    //register special signal for view change for foreachNode
+
+    if (typeid(model) == typeid(ForeachNode *)) {
+        connect((ForeachNode *) model, &ForeachNode::setView, this, [this](QtNodes::GraphicsView *graphView) {
+            emit setView(graphView);
+        });
+    }
+
 }
 
 void DynamicDataFlowGraphModel::trigger() {

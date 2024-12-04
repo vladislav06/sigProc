@@ -8,5 +8,8 @@ add_subdirectory(previewNodes)
 add_subdirectory(fileNodes)
 target_sources(sigProc PRIVATE
         dynamicDataFlowGraphModel.cpp
-        baseNode.cpp)
+        baseNode.cpp
+        foreachNode.cpp
+        nodePort.cpp
+)
 

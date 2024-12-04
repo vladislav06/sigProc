@@ -12,7 +12,8 @@
  */
 struct BaseNodePort {
     QtNodes::NodeDataType type;
-    virtual ~BaseNodePort() = default;
+
+    virtual ~BaseNodePort();
 };
 
 /**
@@ -22,4 +23,9 @@ struct BaseNodePort {
 template<baseDataType T>
 struct NodePort : public BaseNodePort {
     std::shared_ptr<T> data;
+
+    ~NodePort() override;
 };
+
+template<baseDataType T>
+NodePort<T>::~NodePort() = default;

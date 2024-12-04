@@ -46,3 +46,20 @@ consteval StringType<N1 + N2 - 1> operator+(StringType<N1> a, const char (&b)[N2
     StringType<N1 + N2 - 1> s(value);
     return s;
 }
+
+/**
+ * Const function that allows StringType and char array compile time concatenation
+ * @tparam N1 length of first StringType
+ * @tparam N2 length of second char array
+ * @param a first StringType
+ * @param b second char array
+ * @return new StringType that is concatenation of first and second
+ */
+template<auto N1, auto N2>
+consteval StringType<N1 + N2 - 1> operator+(const char (&b)[N2], StringType<N1> a) {
+    char value[N1 + N2 - 1];
+    std::copy_n(a.value, N1, value+ N2 - 1);
+    std::copy_n(b, N2-1, value );
+    StringType<N1 + N2 - 1> s(value);
+    return s;
+}

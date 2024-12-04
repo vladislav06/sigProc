@@ -5,7 +5,6 @@
 
 #include <utility>
 #include <QDir>
-
 #include "baseDataType.h"
 #include "fileDataType.h"
 #include "arrayDataType.h"
@@ -16,6 +15,8 @@ public:
     DataType nodeType;
 
     explicit FolderDataType(QString path) : folderPath(std::move(path)) {}
+
+    ~FolderDataType() override = default;
 
     QtNodes::NodeDataType type() const override {
         return nodeType.getNodeDataType();
@@ -45,14 +46,14 @@ public:
         return folders;
     }
 
-   std::shared_ptr<ArrayDataType<FileDataType>> getFiles() {
+    std::shared_ptr<ArrayDataType<std::shared_ptr<FileDataType>>> getFiles() {
         QDir directory(folderPath);
         if (!directory.exists()) {
             return {};
         }
-        auto  files = std::make_shared<ArrayDataType<FileDataType>>();
+        auto files = std::make_shared<ArrayDataType<std::shared_ptr<FileDataType>>>();
         for (auto file: directory.entryList(QDir::Files)) {
-            FileDataType f(file);
+            auto f = std::make_shared<FileDataType>(file);
             files->get().push_back(f);
         }
         return files;

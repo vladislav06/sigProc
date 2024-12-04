@@ -34,6 +34,8 @@ MainWindow::MainWindow(QWidget *parent) {
         setDirty(true);
     });
 
+    connect(dataFlowGraphModel, &DynamicDataFlowGraphModel::setView, this, &MainWindow::changeView);
+
 }
 
 void MainWindow::onSave() {
@@ -129,4 +131,9 @@ void MainWindow::setDirty(bool dirty) {
         setWindowTitle(currentFile);
     }
     this->dirty = dirty;
+}
+
+void MainWindow::changeView(QtNodes::GraphicsView *graphView) {
+    std::cout << "View will be changed!" << std::endl;
+
 }

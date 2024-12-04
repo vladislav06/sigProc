@@ -8,10 +8,12 @@
 
 class BaseDataType : public QtNodes::NodeData {
 public:
-    using DataType = NodeDataTypeType<"Base", "any">;
+    using DataType = BaseNodeDataTypeType<"Base", "any">;
     DataType nodeType;
 
     virtual QString toString() = 0;
+
+    ~BaseDataType() override = default;
 };
 
 

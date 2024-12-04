@@ -16,7 +16,7 @@ QWidget *GetFileNode::embeddedWidget() {
     return nullptr;
 }
 
-std::tuple<std::shared_ptr<ArrayDataType<FileDataType>>>
+std::tuple<std::shared_ptr<ArrayDataType<std::shared_ptr<FileDataType>>>>
 GetFileNode::compute(std::tuple<std::shared_ptr<FolderDataType>> params,
                      std::vector<std::shared_ptr<BaseDataType>> adParams) {
     auto folder = std::get<0>(params);

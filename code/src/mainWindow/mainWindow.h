@@ -20,6 +20,7 @@
 #include "src/nodes/dataInputNodes/inputFolderNode.h"
 #include "src/nodes/dataInputNodes/inputFileNode.h"
 #include "src/nodes/fileNodes/getFileNode.h"
+#include "src/nodes/foreachNode.h"
 #include <QtNodes/DataFlowGraphicsScene>
 #include <QtNodes/GraphicsView>
 #include <QtNodes/NodeDelegateModelRegistry>
@@ -45,7 +46,6 @@ public:
         nodeRegistry->registerModel<InputFileNode>("Input");
         nodeRegistry->registerModel<GetFileNode>("Input");
 
-
         nodeRegistry->registerModel<WaveformDataInputNode>("Input");
 
         nodeRegistry->registerModel<GeneratorNode>("Input");
@@ -62,7 +62,12 @@ public:
         nodeRegistry->registerModel<PreviewNode>("Output");
         nodeRegistry->registerModel<GraphPreviewNode<double>>("Output");
 
+        nodeRegistry->registerModel<ForeachNode>();
+
     }
+
+public slots:
+    void changeView(QtNodes::GraphicsView * graphView);
 
 private:
     void onSave();

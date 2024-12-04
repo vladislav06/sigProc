@@ -103,14 +103,14 @@ private:
     };
 
     template<tuple tup, std::size_t I = 0>
-    constexpr void generateNodePort(std::vector<std::shared_ptr<BaseNodePort>> &ports) {
+    static constexpr void generateNodePort(std::vector<std::shared_ptr<BaseNodePort>> &ports) {
         if constexpr (I < std::tuple_size_v<tup>) {
             using SelectedType = std::tuple_element_t<I, tup>;
             auto port = std::make_shared<NodePort<SelectedType>>();
             using DataType = SelectedType::DataType;
             DataType dataType;
             port->type = dataType.getNodeDataType();
-            ports.push_back(std::move(port));
+            ports.push_back(port);
             generateNodePort<tup, I + 1>(ports);
         }
     }
@@ -152,7 +152,7 @@ private:
         if constexpr (I < std::tuple_size_v<tup>) {
             if (I == index) {
                 using portType = std::tuple_element_t<I, tup>;
-                auto dataType = std::static_pointer_cast<portType>(data);
+                auto dataType = std::dynamic_pointer_cast<portType>(data);
                 if (dataType == nullptr && data != nullptr) {
                     std::cout << "Unable to cast data!: " << typeid(data.get()).name() << std::endl;
                 }
@@ -161,7 +161,7 @@ private:
             setInNodePortData<tup, I + 1>(ports, data, index);
         } else if (index >= std::tuple_size_v<tup> && index < std::tuple_size_v<tup> + additionalInPorts) {
             using portType = AdInPort;
-            auto dataType = std::static_pointer_cast<portType>(data);
+            auto dataType = std::dynamic_pointer_cast<portType>(data);
             if (dataType == nullptr && data != nullptr) {
                 std::cout << "Unable to cast data!: " << typeid(data.get()).name() << std::endl;
             }
@@ -175,7 +175,8 @@ private:
                             WrappedTupleElements<OutPorts>::type &inTuple) {
         if constexpr (I < std::tuple_size_v<OutTuple>) {
             using portType = std::tuple_element_t<I, OutTuple>::element_type;
-            std::dynamic_pointer_cast<NodePort<portType>>(ports.at(I))->data = std::get<I>(inTuple);
+            auto newd = std::get<I>(inTuple);
+            std::dynamic_pointer_cast<NodePort<portType>>(ports.at(I))->data = newd;
             setOutNodePortData<OutTuple, I + 1>(ports, inTuple);
         }
     }
@@ -188,8 +189,9 @@ private:
             using portType = std::tuple_element_t<I, OutTuple>;
 
             if (I == index) {
-                auto out = std::dynamic_pointer_cast<NodePort<portType>>(ports.at(I))->data;
-                return out;
+                std::shared_ptr<portType> out = std::dynamic_pointer_cast<NodePort<portType>>(ports.at(I))->data;
+                auto o = std::dynamic_pointer_cast<QtNodes::NodeData>(out);
+                return o;
             } else {
                 return getOutNodeData<OutTuple, I + 1>(ports, index);
             }
@@ -203,7 +205,7 @@ public:
     [[nodiscard]] unsigned int nPorts(QtNodes::PortType portType) const override {
         switch (portType) {
             case QtNodes::PortType::In:
-                assert(std::tuple_size_v<InPorts> + additionalInPorts==inNodePorts.size());
+                assert(std::tuple_size_v<InPorts> + additionalInPorts == inNodePorts.size());
                 return std::tuple_size_v<InPorts> + additionalInPorts;
                 break;
             case QtNodes::PortType::Out:
@@ -240,15 +242,16 @@ public:
     }
 
     void callCompute() {
-        //convert additional params into vector
-        std::vector<std::shared_ptr<AdInPort>> adParams;
-        for (int i = std::tuple_size_v<InPorts>; i < std::tuple_size_v<InPorts> + additionalInPorts; i++) {
-            adParams.push_back(std::dynamic_pointer_cast<NodePort<AdInPort>>(inNodePorts.at(i))->data);
-        }
+
         if (parallelization) {
             computeThreadSemaphore.acquire();
-            ThreadPool::get().queueJob([this, adParams]() {
-                uiThreadSemaphore.release();
+            ThreadPool::get().queueJob([&]() {
+                uiThreadSemaphore.acquire();
+                //convert additional params into vector
+                std::vector<std::shared_ptr<AdInPort>> adParams;
+                for (int i = std::tuple_size_v<InPorts>; i < std::tuple_size_v<InPorts> + additionalInPorts; i++) {
+                    adParams.push_back(std::dynamic_pointer_cast<NodePort<AdInPort>>(inNodePorts.at(i))->data);
+                }
                 auto ret = compute(vectorToTuple<InPorts, std::tuple_size_v<InPorts>>(inNodePorts), adParams);
 
                 auto tempOutNodePorts = outNodePorts;
@@ -256,6 +259,7 @@ public:
                 setOutNodePortData<typename WrappedTupleElements<OutPorts>::type>(outNodePorts, ret);
 
                 for (int i = 0; i < outNodePorts.size(); i++) {
+
                     if (tempOutNodePorts[i] != outNodePorts[i]) {
                         Q_EMIT dataUpdated(i);
                     }
@@ -264,6 +268,11 @@ public:
                 computeThreadSemaphore.release();
             });
         } else {
+            //convert additional params into vector
+            std::vector<std::shared_ptr<AdInPort>> adParams;
+            for (int i = std::tuple_size_v<InPorts>; i < std::tuple_size_v<InPorts> + additionalInPorts; i++) {
+                adParams.push_back(std::dynamic_pointer_cast<NodePort<AdInPort>>(inNodePorts.at(i))->data);
+            }
             auto ret = compute(vectorToTuple<InPorts, std::tuple_size_v<InPorts>>(inNodePorts), adParams);
 
             auto tempOutNodePorts = outNodePorts;
@@ -403,7 +412,6 @@ public:
 
         modify();
         portsDeleted();
-
 
 
         dirtyInputConnections = false;
