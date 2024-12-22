@@ -2,14 +2,18 @@
 // Created by vm on 24.30.10.
 //
 
+#include <QFileDialog>
 #include "mainWindow.h"
 #include "fstream"
+#include "src/globals.h"
+#include "QTimer"
+#include "QPushButton"
 
 MainWindow::MainWindow(QWidget *parent) {
     setupUi(this);
     nodeRegistry = std::make_shared<QtNodes::NodeDelegateModelRegistry>();
 
-    registerNodes();
+    registerNodes(nodeRegistry);
 
     dataFlowGraphModel = new DynamicDataFlowGraphModel(nodeRegistry);
     scene = new QtNodes::DataFlowGraphicsScene(*dataFlowGraphModel, this);
@@ -67,6 +71,11 @@ void MainWindow::onSave() {
 }
 
 void MainWindow::onLoad() {
+    //exit from internal editor
+    if (backButton != nullptr) {
+        backButton->click();
+    }
+
     QString name = QFileDialog::getOpenFileName(this, tr("Open File"), QDir::currentPath(), tr("SigProc file (*.spf)"));
     if (name == "") {
         return;
@@ -87,8 +96,10 @@ void MainWindow::onLoad() {
     }
     assert(dataFlowGraphModel->allNodeIds().size() == 0);
 
+    QTimer::singleShot(0, [doc, this] {
+        dataFlowGraphModel->load(doc.object());
+    });
 
-    dataFlowGraphModel->load(doc.object());
 
     currentFile = name;
 
@@ -133,7 +144,27 @@ void MainWindow::setDirty(bool dirty) {
     this->dirty = dirty;
 }
 
-void MainWindow::changeView(QtNodes::GraphicsView *graphView) {
-    std::cout << "View will be changed!" << std::endl;
+void MainWindow::changeView(QtNodes::GraphicsView *graphView, DynamicDataFlowGraphModel *graphModel) {
 
+    nodeWidget->layout()->removeWidget(view);
+    view->hide();
+    //create back button
+    backButton = new QPushButton("< Back");
+    nodeWidget->layout()->addWidget(backButton);
+    actionReload->setDisabled(true);
+
+    connect(backButton, &QPushButton::clicked, this, [this, graphView, graphModel](bool) {
+
+        nodeWidget->layout()->removeWidget(backButton);
+        delete backButton;
+        nodeWidget->layout()->removeWidget(graphView);
+        delete graphView;
+        graphModel->onViewClose();
+
+        nodeWidget->layout()->addWidget(view);
+        view->show();
+        backButton = nullptr;
+        actionReload->setDisabled(false);
+    });
+    nodeWidget->layout()->addWidget(graphView);
 }

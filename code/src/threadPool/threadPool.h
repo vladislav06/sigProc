@@ -5,7 +5,7 @@
 
 #include <mutex>
 #include <condition_variable>
-#include <queue>
+#include <deque>
 #include <functional>
 
 /**
@@ -13,24 +13,51 @@
  */
 class ThreadPool {
 public:
-//    static ThreadPool &operator()() {
-//        static ThreadPool instance;
-//        return instance;
-//    }
+
+    struct Job {
+        std::function<void()> job;
+        void *owner = nullptr;
+        size_t jobId = 0;
+        std::atomic_bool inProgress = false;
+    };
+
+    /**
+     * Will return instance of thread pool
+     * @return
+     */
     static ThreadPool &get() {
         static ThreadPool instance;
         return instance;
     }
 
+    /**
+     * Start thread pool, mus be called only once
+     */
     void start();
 
-    void queueJob(const std::function<void()> &job);
+    /**
+     * Queue job for thread pool to execute
+     * @param job job to be executed
+     * @param owner owner of this job
+     */
+    std::shared_ptr<Job> queueJob(const std::function<void()> &job, void *owner);
 
+    std::vector<std::shared_ptr<ThreadPool::Job>> getJobs(void *owner);
+
+    void deleteJob(std::shared_ptr<ThreadPool::Job>  job);
+
+    /**
+     * Will stop thread pool
+     */
     void stop();
 
+    /**
+     * Returns whether thread pool has jobQueue to do
+     * @return
+     */
     bool busy();
 
-    ~ThreadPool(){
+    ~ThreadPool() {
         stop();
     }
 
@@ -41,13 +68,21 @@ private:
 
     void operator=(ThreadPool const &);
 
-    void ThreadLoop();
+    void ThreadLoop(int index);
 
     std::unique_ptr<ThreadPool> instance{};
 
-    bool should_terminate = false;           // Tells threads to stop looking for jobs
-    std::mutex queue_mutex{};                  // Prevents data races to the job queue
-    std::condition_variable mutex_condition{}; // Allows threads to wait on new jobs or termination
+    bool should_terminate = false;           // Tells threads to stop looking for jobQueue
+    size_t nextJobId = 0;
+
+    std::mutex threadMutex{};
+    std::condition_variable mutex_condition{}; // Allows threads to wait on new jobQueue or termination
     std::vector<std::thread> threads{};
-    std::queue<std::function<void()>> jobs{};
+
+    std::mutex queueMutex{};                  // Prevents data races to the job queue
+    std::deque<std::shared_ptr<Job>> jobQueue{};
+
+    std::mutex jobsExecutedMutex{};
+    std::vector<std::shared_ptr<Job>> jobsExecuted{};
+
 };

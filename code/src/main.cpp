@@ -4,6 +4,7 @@
 
 #include <QApplication>
 #include "mainWindow/mainWindow.h"
+#include "src/threadPool/threadPool.h"
 
 int main(int argc, char *argv[]) {
     ThreadPool::get().start();

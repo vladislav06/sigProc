@@ -17,13 +17,20 @@ public:
 
         freq = new QDoubleSpinBox();
         amplitude = new QDoubleSpinBox();
+        duty = new QDoubleSpinBox();
         offset = new QDoubleSpinBox();
         phase = new QDoubleSpinBox();
         length = new QSpinBox();
         samplingRate = new QSpinBox();
+
+        amplitude->setMinimum(1);
+        offset->setRange(-99999,99999),
+        duty->setRange(0,1);
         samplingRate->setMinimum(1);
+
         std::vector<std::pair<QString, std::variant<QSpinBox *, QDoubleSpinBox *>>> pairs = {{"frequency",     freq},
                                                                                              {"amplitude",     amplitude},
+                                                                                             {"duty",          duty},
                                                                                              {"offset",        offset},
                                                                                              {"phase",         phase},
                                                                                              {"length",        length},
@@ -31,7 +38,7 @@ public:
         for (auto pair: pairs) {
             std::visit([pair, this](auto box) {
                 box->setMaximum(INT32_MAX);
-                QWidget *p = new QWidget();
+                QWidget * p = new QWidget();
                 p->setLayout(new QBoxLayout(QBoxLayout::LeftToRight));
                 p->layout()->addWidget(new QLabel(pair.first));
                 p->layout()->addWidget(box);
@@ -56,12 +63,13 @@ public:
         double ph = phase->value();
         double off = offset->value();
         double am = amplitude->value();
+        double dut = 1.0-duty->value();
 
 
         auto array = std::make_shared<ArrayDataType<double>>();
         array->get().resize(len);
         for (int i = 0; i < len; i++) {
-            array->get()[i] = am * (sin(fr * (double) i + ph) > 0 ? 1 : -1) + off;
+            array->get()[i] = am * std::floor(cos(fr * (double) i + ph+dut*M_PI+M_PI) * 0.5 + (cos(dut*M_PI)*0.5+1)) + off;
         }
         return array;
     }
@@ -70,6 +78,7 @@ public:
         return {
                 {"freq",         freq->value()},
                 {"amplitude",    amplitude->value()},
+                {"duty",         duty->value()},
                 {"offset",       offset->value()},
                 {"phase",        phase->value()},
                 {"length",       length->value()},
@@ -85,10 +94,12 @@ public:
         length->setValue(json["length"].toInt(10));
         samplingRate->setValue(json["samplingRate"].toInt(10));
     }
+
 private:
     QWidget *base = nullptr;
     QDoubleSpinBox *freq = nullptr;
     QDoubleSpinBox *amplitude = nullptr;
+    QDoubleSpinBox *duty = nullptr;
     QDoubleSpinBox *offset = nullptr;
     QDoubleSpinBox *phase = nullptr;
     QSpinBox *length = nullptr;

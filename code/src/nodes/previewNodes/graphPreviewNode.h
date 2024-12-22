@@ -19,6 +19,8 @@ public:
 
     }
 
+    ~GraphPreviewNode() override = default;
+
     QJsonObject onSave() const override {
         return QJsonObject();
     }
@@ -116,8 +118,8 @@ public:
                 list.append(QPointF(n, array->get()[i]));
             }
 
-            if (array->get().size()-1 > maxX) {
-                maxX = array->get().size()-1;
+            if (array->get().size() - 1 > maxX) {
+                maxX = array->get().size() - 1;
             }
             pointLists.push_back(list);
         }

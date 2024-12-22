@@ -42,8 +42,12 @@ public slots:
 
     void afterComputeSlot() {
         afterCompute();
-        uiThreadSemaphore.release();
     };
+
+    /**
+     * type of data that is connected will be send to this slot
+     */
+    virtual void onInputConnectionCreation(QtNodes::ConnectionId connection, QtNodes::NodeDataType type) {};
 
 public:
     /**
@@ -66,9 +70,21 @@ public:
     BaseNode() = default;
 
     ~BaseNode() override {
+        std::cout << "~BaseNode" << std::endl;
+
         //wait until job is done
         computeThreadSemaphore.acquire();
         computeThreadSemaphore.release();
+        auto jobs = ThreadPool::get().getJobs(this);
+        for (auto &job: jobs) {
+            if(job->inProgress==true){
+                std::cout << "waiting" << std::endl;
+            }
+            while (job->inProgress) {
+
+            }
+            ThreadPool::get().deleteJob(job);
+        }
     }
 
 private:
@@ -129,6 +145,9 @@ private:
 
     int additionalInPorts = 0;
 
+    /**
+     * Ignore connection changes when node edits its own connections
+     */
     bool dirtyInputConnections = false;
 
     // guards compute thread until job is done
@@ -242,11 +261,11 @@ public:
     }
 
     void callCompute() {
-
         if (parallelization) {
             computeThreadSemaphore.acquire();
-            ThreadPool::get().queueJob([&]() {
+            ThreadPool::get().queueJob([this]() {
                 uiThreadSemaphore.acquire();
+                emit computingStarted();
                 //convert additional params into vector
                 std::vector<std::shared_ptr<AdInPort>> adParams;
                 for (int i = std::tuple_size_v<InPorts>; i < std::tuple_size_v<InPorts> + additionalInPorts; i++) {
@@ -264,9 +283,12 @@ public:
                         Q_EMIT dataUpdated(i);
                     }
                 }
+                //TODO add headless flag
                 Q_EMIT callAfterCompute();
+                uiThreadSemaphore.release();
                 computeThreadSemaphore.release();
-            });
+                emit computingFinished();
+            }, this);
         } else {
             //convert additional params into vector
             std::vector<std::shared_ptr<AdInPort>> adParams;

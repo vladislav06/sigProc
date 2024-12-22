@@ -1,8 +1,10 @@
 //
 // Created by vm on 24.4.12.
 //
+
 #pragma once
 
+#include <QPushButton>
 #include "QtNodes/internal/NodeDelegateModel.hpp"
 #include "QtNodes/GraphicsView"
 #include "QtNodes/DataFlowGraphicsScene"
@@ -10,24 +12,129 @@
 #include "src/nodes/dataTypes/baseDataType.h"
 #include "src/nodes/dataTypes/arrayDataType.h"
 #include "baseNode.h"
+#include "src/globals.h"
 
 /**
- * This node is special, it has its own graph model inside
+ * Has one array input and any amount of BaseType inputs.
+ * This node will pass each value of input array to dataFlowGraphModel that is stored inside the node.
+ * Effectively for(auto T:array<T>);
  */
 class ForeachNode : public BaseNodeTypeLessWrapper {
 Q_OBJECT
 
 private:
-    QtNodes::DataFlowGraphicsScene *scene;
-    DynamicDataFlowGraphModel *dataFlowGraphModel;
 
+    std::shared_ptr<QtNodes::NodeDelegateModelRegistry> nodeRegistry;
+
+    /**
+     * dataFlowGraphModel that is edited by user, after end of edit this dataFlowGraphModel is copied some amount of times,
+     * copies are stored in dataFlowGraphModels
+     */
+    DynamicDataFlowGraphModel *primaryDataFlowGraphModel;
+
+
+    /**
+     * This struct stores DynamicDataFlowGraphModel* and counters for counting work progress
+     */
+    struct GraphModel {
+        DynamicDataFlowGraphModel *dataFlowGraphModel = nullptr;
+        /// workFinished.notify_all() will be called when DynamicDataFlowGraphModel completes data propagation
+        std::unique_ptr<std::condition_variable> workFinished = std::make_unique<std::condition_variable>();
+        int counterStarted = 0;
+        int counterFinished = 0;
+    };
+
+    /**
+     * Input arguments are passed to each dataFlowGraphModel in this array.
+     * Each dataFlowGraphModel is executed parallel
+     */
+    std::vector<std::shared_ptr<GraphModel>> dataFlowGraphModels;
+
+    /**
+     * How many parallel dataFlowGraphModels can be executed at one time
+     */
+    static constexpr int parallelCount = 8;
+
+    struct Semaphore {
+        std::binary_semaphore semaphore;
+
+        Semaphore() : semaphore(1) {}
+
+        Semaphore(Semaphore &&s) : semaphore(1) {}
+    };
+
+    std::vector<Semaphore> threadSemaphore;
+
+    std::binary_semaphore workSemaphore{1};
+
+
+//    /**
+//     * Array that currently is being processed
+//     */
+//    std::shared_ptr<BaseDataTypeArrayDataType> processedArray;
+
+    QtNodes::DataFlowGraphicsScene *scene;
+
+    // this node accepts any BaseDataType array as first input and BaseDataType as other inputs,
+    // but actual type of connections must be known to pass it to internal dataFlowGraphModel,
+    // so, when connection is created, actual type is saved, and when connection is removed,
+    // port is either deleted, or type is reset to BaseDataType array for first port or BaseDataType to all other ports
     std::vector<QtNodes::NodeDataType> inputPortTypes = {
-            ArrayDataType<std::shared_ptr<BaseDataType>>::DataType::getNodeDataType()};
+            ArrayDataType<std::shared_ptr<BaseDataType>>::DataType::getNodeDataType(),
+            BaseDataType::DataType::getNodeDataType()
+    };
+
+
+    /**
+     * temporary array for storing output value
+     */
+    std::vector<std::vector<std::shared_ptr<BaseDataType>>> resultsArray{};
+    std::mutex resultsMutex;
+
+
     std::vector<QtNodes::NodeDataType> outputPortTypes;
 
+    /**
+     * Stores type of value that is stored in primary array that is being processed
+     */
+    QtNodes::NodeDataType inputArrayValueType = BaseDataType::DataType::getNodeDataType();
+
     std::vector<std::shared_ptr<BaseDataType>> inputPorts = {nullptr};
-    std::vector<std::shared_ptr<BaseDataType>> outputPorts = {nullptr};
+    std::vector<std::shared_ptr<ArrayDataType<std::shared_ptr<BaseDataType>>>> outputPorts = {};
+
+    /**
+     * ForeachInputNode id that is added to dataFlowGraphModel on creation
+     */
+    QtNodes::NodeId inputNodeId;
+
+    /**
+     * ForeachOutputNode id that is added to dataFlowGraphModel on creation
+     */
+    QtNodes::NodeId outputNodeId;
+
+    /**
+     * Ignore connection changes when node edits its own connections
+     * because onInputConnectionCreation and inputConnectionDeleted are called when node deletes its own connections
+     */
+    bool dirtyInputConnections = false;
+
+    QWidget *base = nullptr;
+    QPushButton *button = nullptr;
+
 public:
+
+    ForeachNode() {
+
+    }
+
+    ~ForeachNode() {
+        auto jobs = ThreadPool::get().getJobs(this);
+        for (auto &job: jobs) {
+            while (job->inProgress);
+            ThreadPool::get().deleteJob(job);
+        }
+    }
+
     QString caption() const override;
 
     QString name() const override;
@@ -46,9 +153,31 @@ public:
 
     void recalculate() override;
 
+    void onInputConnectionCreation(QtNodes::ConnectionId connection, QtNodes::NodeDataType type) override;
+
+    void inputConnectionDeleted(const QtNodes::ConnectionId &connection) override;
+
+    QJsonObject save() const override;
+
+    void load(const QJsonObject &json) override;
+
+public slots:
+
+    void viewClosed();
+
 signals:
 
-    void setView(QtNodes::GraphicsView *graphView);
+    void setView(QtNodes::GraphicsView *graphView, DynamicDataFlowGraphModel *graphModel);
+
+private:
+
+    void initDataFlowGraphModel();
+
+    void copyDataFlowGraphModel();
+
+    void updateInternalNodeType();
+
+    void updateExternalOutputPorts();
 };
 
 

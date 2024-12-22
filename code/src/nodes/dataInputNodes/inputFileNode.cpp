@@ -44,7 +44,11 @@ QJsonObject InputFileNode::onSave() const {
 }
 
 bool InputFileNode::onLoad(QJsonObject json) {
-    path->setText(json["path"].toString(""));
+    auto s = json["path"].toString(" ");
+    if (s.isNull()||s.isEmpty()) {
+        s = " ";
+    }
+    path->setText(s);
     return true;
 }
 

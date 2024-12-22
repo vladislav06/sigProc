@@ -35,7 +35,7 @@
     </item>
     <item>
      <widget class="QWidget" name="nodeWidget" native="true">
-      <layout class="QHBoxLayout" name="horizontalLayout_2"/>
+      <layout class="QVBoxLayout" name="verticalLayout"/>
      </widget>
     </item>
    </layout>
@@ -46,12 +46,12 @@
      <x>0</x>
      <y>0</y>
      <width>777</width>
-     <height>22</height>
+     <height>30</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
     <property name="title">
-     <string>File</string>
+     <string>Fi&amp;le</string>
     </property>
     <addaction name="actionSave"/>
     <addaction name="actionOpen"/>
@@ -75,7 +75,7 @@
     </size>
    </property>
    <property name="toolButtonStyle">
-    <enum>Qt::ToolButtonTextBesideIcon</enum>
+    <enum>Qt::ToolButtonStyle::ToolButtonTextBesideIcon</enum>
    </property>
    <property name="floatable">
     <bool>false</bool>
@@ -112,7 +112,7 @@
     <iconset theme="document-save"/>
    </property>
    <property name="text">
-    <string>Save</string>
+    <string>&amp;Save</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+S</string>
@@ -124,7 +124,7 @@
      <normaloff>:/icons/breeze-dark/actions/22/document-open.svg</normaloff>:/icons/breeze-dark/actions/22/document-open.svg</iconset>
    </property>
    <property name="text">
-    <string>Open</string>
+    <string>&amp;Open</string>
    </property>
   </action>
   <action name="actionCopy">

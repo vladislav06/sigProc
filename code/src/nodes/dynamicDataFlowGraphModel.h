@@ -27,7 +27,11 @@ public slots:
 
     void trigger();
 
+    void onViewClose();
+
 signals:
 
-    void setView(QtNodes::GraphicsView *graphView);
+    void setView(QtNodes::GraphicsView *graphView, DynamicDataFlowGraphModel *graphModel);
+
+    void viewClosed();
 };

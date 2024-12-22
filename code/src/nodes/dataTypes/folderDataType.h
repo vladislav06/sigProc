@@ -53,7 +53,7 @@ public:
         }
         auto files = std::make_shared<ArrayDataType<std::shared_ptr<FileDataType>>>();
         for (auto file: directory.entryList(QDir::Files)) {
-            auto f = std::make_shared<FileDataType>(file);
+            auto f = std::make_shared<FileDataType>(folderPath + QDir::separator() + file);
             files->get().push_back(f);
         }
         return files;

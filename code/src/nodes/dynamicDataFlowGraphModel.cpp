@@ -11,6 +11,21 @@ DynamicDataFlowGraphModel::DynamicDataFlowGraphModel(std::shared_ptr<QtNodes::No
         : DataFlowGraphModel(std::move(registry)) {
 
     connect(this, &QtNodes::DataFlowGraphModel::nodeCreated, this, &DynamicDataFlowGraphModel::onNodeCreation);
+
+
+    //send datatype of connected port to input node
+    connect(this, &DynamicDataFlowGraphModel::connectionCreated, this,
+            [this](QtNodes::ConnectionId const connectionId) {
+                auto outputDataType = portData(connectionId.outNodeId,
+                                               QtNodes::PortType::Out,
+                                               getPortIndex(QtNodes::PortType::Out, connectionId),
+                                               QtNodes::PortRole::DataType)
+                        .value<QtNodes::NodeDataType>();
+                auto model = delegateModel<BaseNodeTypeLessWrapper>(connectionId.inNodeId);
+                emit model->onInputConnectionCreation(connectionId, outputDataType);
+            });
+
+
 }
 
 bool DynamicDataFlowGraphModel::connectionPossible(const QtNodes::ConnectionId connectionId) const {
@@ -36,36 +51,7 @@ bool DynamicDataFlowGraphModel::connectionPossible(const QtNodes::ConnectionId c
     auto typeOut = getDataType(QtNodes::PortType::Out);
     auto typeIn = getDataType(QtNodes::PortType::In);
 
-
-    auto typesOut = typeOut.id.split("_");
-    auto typesIn = typeIn.id.split("_");
-
-    //check if output type is fully present in input from the start
-    bool contains = false;
-    int o = 0;
-    int i = 0;
-    while (true) {
-        if (o > typesOut.size() && i > typesIn.size()) {
-            contains = true;
-            break;
-        }
-        if (o >= typesOut.size()) {
-            contains = false;
-            break;
-        }
-        if (i >= typesIn.size()) {
-            contains = true;
-            break;
-        }
-        if (typesOut[o] == typesIn[i]) {
-            o++;
-            i++;
-        } else {
-            contains = false;
-            break;
-        }
-    }
-
+    bool contains = NodeDataTypeTypeHelpers::inherits(typeOut, typeIn);
     if (contains
         && portVacant(QtNodes::PortType::Out) && portVacant(QtNodes::PortType::In)) {
         if (willHaveCycle(connectionId)) {
@@ -87,7 +73,6 @@ bool DynamicDataFlowGraphModel::willHaveCycle(const QtNodes::ConnectionId connec
         auto cons = QtNodes::DataFlowGraphModel::allConnectionIds(node);
         std::for_each(cons.begin(), cons.end(), [&connections](auto const &p) { connections.insert(p); });
     }
-
     std::vector<std::vector<unsigned int>> adjacencyList;
 
     unsigned int maxNodeId = 0;
@@ -161,9 +146,11 @@ bool DynamicDataFlowGraphModel::willHaveCycle(const QtNodes::ConnectionId connec
 }
 
 void DynamicDataFlowGraphModel::onNodeCreation(const QtNodes::NodeId nodeId) {
-    auto model = delegateModel<QtNodes::NodeDelegateModel>(nodeId);
 
-    //register additional signal
+    auto model = delegateModel<BaseNodeTypeLessWrapper>(nodeId);
+    assert(model != nullptr);
+
+    //when size of embedded widget updates,  redraw model on next frame, or else redraw will not have any effect
     connect(model, &QtNodes::NodeDelegateModel::embeddedWidgetSizeUpdated, this, [this, nodeId]() {
         //update node on next frame because widgets might still not be added
         QTimer::singleShot(0, [this, nodeId] {
@@ -172,11 +159,11 @@ void DynamicDataFlowGraphModel::onNodeCreation(const QtNodes::NodeId nodeId) {
     });
 
     //register special signal for view change for foreachNode
-
-    if (typeid(model) == typeid(ForeachNode *)) {
-        connect((ForeachNode *) model, &ForeachNode::setView, this, [this](QtNodes::GraphicsView *graphView) {
-            emit setView(graphView);
-        });
+    if (typeid(*model) == typeid(ForeachNode)) {
+        connect((ForeachNode *) model, &ForeachNode::setView, this,
+                [this](QtNodes::GraphicsView *graphView, DynamicDataFlowGraphModel *graphModel) {
+                    emit setView(graphView, graphModel);
+                });
     }
 
 }
@@ -190,4 +177,8 @@ void DynamicDataFlowGraphModel::trigger() {
             model->recalculate();
         }
     }
+}
+
+void DynamicDataFlowGraphModel::onViewClose() {
+    emit viewClosed();
 }
