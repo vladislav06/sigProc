@@ -10,6 +10,7 @@ find_package(Qt6 COMPONENTS
         Gui
         Widgets
         Charts
+        Concurrent
         REQUIRED)
 
 find_package(CGAL COMPONENTS
@@ -26,11 +27,11 @@ set(BUILD_SHARED_LIBS ON)
 set(CGAL_DO_NOT_WARN_ABOUT_CMAKE_BUILD_TYPE ON)
 
 
-#add_compile_options(-O3)
+add_compile_options(-O3)
 #debug options
-add_compile_options(-pedantic -fno-omit-frame-pointer -g -O0 -fno-inline)
-add_compile_options(-fsanitize=address)
-add_link_options(-fsanitize=address)
+#add_compile_options(-pedantic -fno-omit-frame-pointer -g -O0 -fno-inline)
+#add_compile_options(-fsanitize=address)
+#add_link_options(-fsanitize=address)
 
 
 include(src/CMakeLists.txt)
@@ -48,6 +49,7 @@ target_link_libraries(sigProc PRIVATE
         Qt::Gui
         Qt::Widgets
         Qt::Charts
+        Qt::Concurrent
         #QXlsx::QXlsx
         CGAL::CGAL_Core
         fftw3

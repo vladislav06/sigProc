@@ -4,5 +4,5 @@
 #include "baseNode.h"
 
 BaseNodeTypeLessWrapper::BaseNodeTypeLessWrapper() {
-    connect(this, &BaseNodeTypeLessWrapper::callAfterCompute, this, &BaseNodeTypeLessWrapper::afterComputeSlot);
+    connect(this, &BaseNodeTypeLessWrapper::callAfterCompute, this, &BaseNodeTypeLessWrapper::afterComputeSlot, Qt::QueuedConnection);
 }

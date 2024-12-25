@@ -10,8 +10,10 @@
 #include "iostream"
 #include "src/nodes/dataTypes/arrayData.h"
 #include "src/nodes/nodePort.h"
-#include "src/threadPool/threadPool.h"
-
+#include "semaphore"
+//#include "src/threadPool/threadPool.h"
+#include "QtConcurrent/QtConcurrent"
+#include "QApplication"
 
 /**
  * BaseNode base class with some methods that dont require input and output types
@@ -23,8 +25,19 @@ public:
     BaseNodeTypeLessWrapper();
 
     ~BaseNodeTypeLessWrapper() override {
-        uiThreadSemaphore.release();
+//        QEventLoop wait;
+//        QFutureWatcher<void> fw;
+//        fw.setFuture(runningJob);
+//        QObject::connect(&fw, &QFutureWatcher<void>::finished, &wait, &QEventLoop::quit);
+//        wait.exec();
+//        QObject::disconnect(&fw, &QFutureWatcher<void>::finished, &wait, &QEventLoop::quit);
+//        fw.waitForFinished();
     };
+
+    virtual QFuture<void> prepareToDelete() {
+        willBeDeleted = true;
+        return runningJob.then([this]() { uiThreadSemaphore.acquire(); });
+    }
 
     virtual bool isSource() = 0;
 
@@ -42,6 +55,7 @@ public slots:
 
     void afterComputeSlot() {
         afterCompute();
+        uiThreadSemaphore.release();
     };
 
     /**
@@ -56,6 +70,11 @@ public:
      * update ui elements in this method
      */
     virtual void afterCompute() {};
+
+protected:
+    QFuture<void> runningJob;
+
+    bool willBeDeleted = false;
 };
 
 
@@ -72,14 +91,14 @@ public:
 
     ~BaseNode() override {
         //wait until job is done
-        computeThreadSemaphore.acquire();
-        computeThreadSemaphore.release();
-        auto jobs = ThreadPool::get().getJobs(this);
-        for (auto &job: jobs) {
-            while (job->inProgress) {
-            }
-            ThreadPool::get().deleteJob(job);
-        }
+//        computeThreadSemaphore.acquire();
+//        computeThreadSemaphore.release();
+//        auto jobs = ThreadPool::get().getJobs(this);
+//        for (auto &job: jobs) {
+//            while (job->inProgress) {
+//            }
+//            ThreadPool::get().deleteJob(job);
+//        }
     }
 
 private:
@@ -257,34 +276,14 @@ public:
     }
 
     void callCompute() {
-        if (parallelization) {
+        if (willBeDeleted) {
+            return;
+        }
+        runningJob = QtConcurrent::run([this](QPromise<void> &promise) {
             computeThreadSemaphore.acquire();
-            ThreadPool::get().queueJob([this]() {
-                uiThreadSemaphore.acquire();
-                emit computingStarted();
-                //convert additional params into vector
-                std::vector<std::shared_ptr<AdInPort>> adParams;
-                for (int i = std::tuple_size_v<InPorts>; i < std::tuple_size_v<InPorts> + additionalInPorts; i++) {
-                    adParams.push_back(std::dynamic_pointer_cast<NodePort<AdInPort>>(inNodePorts.at(i))->data);
-                }
-                auto ret = compute(vectorToTuple<InPorts, std::tuple_size_v<InPorts>>(inNodePorts), adParams);
+            uiThreadSemaphore.acquire();
 
-                auto tempOutNodePorts = outNodePorts;
-                outNodePorts = generateNodePorts<OutPorts>();
-                setOutNodePortData<typename WrappedTupleElements<OutPorts>::type>(outNodePorts, ret);
-
-                for (int i = 0; i < outNodePorts.size(); i++) {
-
-                    if (tempOutNodePorts[i] != outNodePorts[i]) {
-                        Q_EMIT dataUpdated(i);
-                    }
-                }
-                Q_EMIT callAfterCompute();
-                uiThreadSemaphore.release();
-                computeThreadSemaphore.release();
-                emit computingFinished();
-            }, this);
-        } else {
+            emit computingStarted();
             //convert additional params into vector
             std::vector<std::shared_ptr<AdInPort>> adParams;
             for (int i = std::tuple_size_v<InPorts>; i < std::tuple_size_v<InPorts> + additionalInPorts; i++) {
@@ -296,12 +295,17 @@ public:
             outNodePorts = generateNodePorts<OutPorts>();
             setOutNodePortData<typename WrappedTupleElements<OutPorts>::type>(outNodePorts, ret);
 
+
             for (int i = 0; i < outNodePorts.size(); i++) {
                 if (tempOutNodePorts[i] != outNodePorts[i]) {
                     Q_EMIT dataUpdated(i);
                 }
             }
-        }
+            Q_EMIT callAfterCompute();
+            computeThreadSemaphore.release();
+            emit computingFinished();
+        });
+
 
     }
 

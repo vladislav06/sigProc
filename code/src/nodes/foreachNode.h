@@ -101,13 +101,14 @@ public:
     }
 
     ~ForeachNode() {
-        auto jobs = ThreadPool::get().getJobs(this);
-        for (auto &job: jobs) {
-            while (job->inProgress);
-            ThreadPool::get().deleteJob(job);
-        }
+
     }
 
+    QFuture<void> prepareToDelete() override{
+        QPromise<void> p;
+        p.finish();
+        return p.future();
+    }
     QString caption() const override;
 
     QString name() const override;
