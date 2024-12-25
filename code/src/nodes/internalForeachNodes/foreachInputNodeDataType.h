@@ -5,15 +5,15 @@
 //
 #pragma once
 
-class ForeachInputNodeDataType : public QtNodes::NodeData {
+class ForeachInputNodeData : public QtNodes::NodeData {
 public:
-    ForeachInputNodeDataType(std::vector<QtNodes::NodeDataType> type, std::vector<std::shared_ptr<BaseData>> data)
+    ForeachInputNodeData(std::vector<QtNodes::NodeDataType> type, std::vector<std::shared_ptr<BaseData>> data)
             : types(std::move(type)), data(std::move(data)) {};
 
-    ~ForeachInputNodeDataType() override = default;
+    ~ForeachInputNodeData() override = default;
 
     QtNodes::NodeDataType type() const override {
-        return QtNodes::NodeDataType{.id="ForeachInputNodeDataType", .name="ForeachInputNodeDataType"};
+        return QtNodes::NodeDataType{.id="ForeachInputNodeData", .name="ForeachInputNodeData"};
     }
 
     std::vector<QtNodes::NodeDataType> types;

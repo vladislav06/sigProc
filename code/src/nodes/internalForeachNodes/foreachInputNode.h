@@ -20,8 +20,8 @@ public:
 
     /**
      * Ignores all data except when portIndex is QtNodes::InvalidPortIndex,
-     * then nodeData must be with type of ForeachInputNodeDataType, and contain output types and output data
-     * @param nodeData ForeachInputNodeDataType containing output data types and data
+     * then nodeData must be with type of ForeachInputNodeData, and contain output types and output data
+     * @param nodeData ForeachInputNodeData containing output data types and data
      * @param portIndex QtNodes::InvalidPortIndex
      */
     void setInData(std::shared_ptr<QtNodes::NodeData> nodeData, const QtNodes::PortIndex portIndex) override;
@@ -36,7 +36,6 @@ public:
 
 private:
     std::vector<QtNodes::NodeDataType> outputTypes;
-
     std::vector<std::shared_ptr<BaseData>> outputData;
 };
 
