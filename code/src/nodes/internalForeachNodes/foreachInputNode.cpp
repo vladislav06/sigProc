@@ -43,7 +43,7 @@ QtNodes::NodeDataType ForeachInputNode::dataType(QtNodes::PortType portType, QtN
 
 void ForeachInputNode::setInData(std::shared_ptr<QtNodes::NodeData> nodeData, const QtNodes::PortIndex portIndex) {
     if (portIndex == QtNodes::InvalidPortIndex) {
-        auto data = std::dynamic_pointer_cast<ForeachInputNodeDataType>(nodeData);
+        auto data = std::dynamic_pointer_cast<ForeachInputNodeData>(nodeData);
         assert(data != nullptr);
 
         if (outputTypes.size() != data->types.size()) {

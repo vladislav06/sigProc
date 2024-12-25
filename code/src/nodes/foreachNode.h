@@ -24,46 +24,22 @@ Q_OBJECT
 
 private:
 
+    bool innited = false;
     std::shared_ptr<QtNodes::NodeDelegateModelRegistry> nodeRegistry;
 
     /**
      * dataFlowGraphModel that is edited by user, after end of edit this dataFlowGraphModel is copied some amount of times,
      * copies are stored in dataFlowGraphModels
      */
-    DynamicDataFlowGraphModel *primaryDataFlowGraphModel;
+    DynamicDataFlowGraphModel *graphModel;
 
+    /// workFinished.notify_all() will be called when DynamicDataFlowGraphModel completes data propagation
+//    std::unique_ptr<std::condition_variable> workFinished = std::make_unique<std::condition_variable>();
+    std::binary_semaphore workFinished{1};
 
-    /**
-     * This struct stores DynamicDataFlowGraphModel* and counters for counting work progress
-     */
-    struct GraphModel {
-        DynamicDataFlowGraphModel *dataFlowGraphModel = nullptr;
-        /// workFinished.notify_all() will be called when DynamicDataFlowGraphModel completes data propagation
-        std::unique_ptr<std::condition_variable> workFinished = std::make_unique<std::condition_variable>();
-        int counterStarted = 0;
-        int counterFinished = 0;
-    };
+    int counterStarted = 0;
+    int counterFinished = 0;
 
-    /**
-     * Input arguments are passed to each dataFlowGraphModel in this array.
-     * Each dataFlowGraphModel is executed parallel
-     */
-    std::vector<std::shared_ptr<GraphModel>> dataFlowGraphModels;
-
-    /**
-     * How many parallel dataFlowGraphModels can be executed at one time
-     */
-    static constexpr int parallelCount = 8;
-
-    struct Semaphore {
-        std::binary_semaphore semaphore;
-
-        Semaphore() : semaphore(1) {}
-
-        Semaphore(Semaphore &&s) : semaphore(1) {}
-    };
-
-    std::vector<Semaphore> threadSemaphore;
 
     std::binary_semaphore workSemaphore{1};
 
@@ -89,8 +65,6 @@ private:
      * temporary array for storing output value
      */
     std::vector<std::vector<std::shared_ptr<BaseData>>> resultsArray{};
-    std::mutex resultsMutex;
-
 
     std::vector<QtNodes::NodeDataType> outputPortTypes;
 
@@ -124,8 +98,6 @@ private:
 public:
 
     ForeachNode() {
-
-
     }
 
     ~ForeachNode() {
@@ -173,8 +145,6 @@ signals:
 private:
 
     void initDataFlowGraphModel();
-
-    void copyDataFlowGraphModel();
 
     void updateInternalNodeType();
 

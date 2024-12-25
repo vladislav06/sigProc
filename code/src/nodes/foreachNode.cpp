@@ -46,94 +46,62 @@ void ForeachNode::setInData(std::shared_ptr<QtNodes::NodeData> nodeData, const Q
     if (nodeData == nullptr) {
         return;
     }
-    auto data = std::dynamic_pointer_cast<BaseData>(nodeData);
-    assert(data != nullptr);
+    auto d = std::dynamic_pointer_cast<BaseData>(nodeData);
+    assert(d != nullptr);
     workSemaphore.acquire();
+    inputPorts.at(portIndex) = d;
 
-    inputPorts.at(portIndex) = data;
     //start parallel processing
-    //divide input array into even chunks
-    auto array = std::dynamic_pointer_cast<BaseDataArrayData>(inputPorts[0]);
-    assert(array != nullptr);
-    int chunkSize = std::ceil((float) array->size() / (float) parallelCount);
-    if (chunkSize == 0) {
+    if (inputPorts[0] == nullptr) {
         return;
     }
+    initDataFlowGraphModel();
 
-    //array that stores data chunks foreach task
-    std::vector<std::vector<int>> chunks{};
+    auto array = std::dynamic_pointer_cast<BaseDataArrayData>(inputPorts[0]);
+    assert(array != nullptr);
 
-    std::vector<int> currentChunk;
-    // create multiple chunks with chunkSize elements or less
-    for (int i = 0; i < array->size(); i++) {
-        currentChunk.push_back(i);
-        if (i % chunkSize == (chunkSize - 1)) {
-            chunks.push_back(currentChunk);
-            currentChunk.clear();
-        }
-    }
-
-    assert(dataFlowGraphModels.size() >= chunks.size());
-    threadSemaphore.resize(chunks.size());
     resultsArray.clear();
-    for (int i = 0; i < chunks.size(); i++) {
-        auto chunk = chunks[i];
-        auto &graphModel = dataFlowGraphModels[i];
-        threadSemaphore[i].semaphore.acquire();
-        //create tasks for each chunk
-        ThreadPool::get().queueJob([chunk, &graphModel, array, i, this]() {
+    for (int i = 0; i < array->size(); i++) {
+        auto element = array->at(i);
 
-            graphModel->counterStarted = 0;
-            graphModel->counterFinished = 0;
+        counterStarted = 0;
+        counterFinished = 0;
+
+        auto inputNode = graphModel->delegateModel<ForeachInputNode>(inputNodeId);
+        auto outputNode = graphModel->delegateModel<ForeachOutputNode>(outputNodeId);
 
 
-            auto inputNode = graphModel->dataFlowGraphModel->delegateModel<ForeachInputNode>(inputNodeId);
-            auto outputNode = graphModel->dataFlowGraphModel->delegateModel<ForeachOutputNode>(outputNodeId);
+        //create ForeachInputNodeData from input data, but replace first element with one input array element
+        auto types = inputPortTypes;
+        auto data = inputPorts;
+        types[0] = inputArrayValueType;
+        data[0] = element;
+        auto dt = std::make_shared<ForeachInputNodeData>(types, data);
 
-            std::vector<std::vector<std::shared_ptr<BaseData>>> results;
-            for (auto index: chunk) {
-                auto types = inputPortTypes;
-                auto data = inputPorts;
-                types[0] = inputArrayValueType;
-                data[0] = array->at(index);
-                auto dt = std::make_shared<ForeachInputNodeDataType>(types, data);
-
-                //trigger all input nodes
-                auto nodes = graphModel->dataFlowGraphModel->allNodeIds();
-                for (auto node: nodes) {
-                    auto model = graphModel->dataFlowGraphModel->delegateModel<BaseNodeTypeLessWrapper>(node);
-                    if (model->isSource()) {
-                        model->recalculate();
-                    }
-                }
-
-                inputNode->setInData(dt, QtNodes::InvalidPortIndex);
-                //wait for answer
-                std::mutex m;
-                std::unique_lock<std::mutex> lk(m);
-                graphModel->workFinished->wait(lk);
-                graphModel->counterStarted = 0;
-                graphModel->counterFinished = 0;
-                auto result = std::dynamic_pointer_cast<ForeachInputNodeDataType>(
-                        outputNode->outData(QtNodes::InvalidPortIndex));
-                assert(result != nullptr);
-                results.push_back(result->data);
+        //trigger all input nodes
+        auto nodes = graphModel->allNodeIds();
+        for (auto node: nodes) {
+            auto model = graphModel->delegateModel<BaseNodeTypeLessWrapper>(node);
+            if (model->isSource()) {
+                model->recalculate();
             }
-            //push results to joint result array
-            resultsMutex.lock();
-            for (const auto &result: results) {
-                resultsArray.push_back(result);
-            }
-            resultsMutex.unlock();
-            threadSemaphore[i].semaphore.release();
-        }, this);
-    }
+        }
+        workFinished.acquire();
 
-    //wait until all work is done;
-    for (int i = 0; i < chunks.size(); i++) {
-        threadSemaphore[i].semaphore.acquire();
-        threadSemaphore[i].semaphore.release();
+        inputNode->setInData(dt, QtNodes::InvalidPortIndex);
+
+        //wait for answer
+        workFinished.acquire();
+        workFinished.release();
+        counterStarted = 0;
+        counterFinished = 0;
+
+        auto result = std::dynamic_pointer_cast<ForeachInputNodeData>(
+                outputNode->outData(QtNodes::InvalidPortIndex));
+        assert(result != nullptr);
+        resultsArray.push_back(result->data);
     }
+    assert(array->size() == resultsArray.size());
     //convert resultsArray in to array of ArrayData
 
     //fill outputPorts
@@ -174,13 +142,17 @@ QWidget *ForeachNode::embeddedWidget() {
 
         connect(button, &QPushButton::clicked, this, [this](bool) {
             updateInternalNodeType();
-            emit setView(new QtNodes::GraphicsView(scene), primaryDataFlowGraphModel);
+            emit setView(new QtNodes::GraphicsView(scene), graphModel);
         });
     }
     return base;
 }
 
 void ForeachNode::initDataFlowGraphModel() {
+    if (innited) {
+        return;
+    }
+    innited = true;
     //init internal node graph
     nodeRegistry = std::make_shared<QtNodes::NodeDelegateModelRegistry>();
     registerNodes(nodeRegistry);
@@ -189,101 +161,57 @@ void ForeachNode::initDataFlowGraphModel() {
     nodeRegistry->registerModel<ForeachInputNode>("Input");
     nodeRegistry->registerModel<ForeachOutputNode>("Output");
 
-    primaryDataFlowGraphModel = new DynamicDataFlowGraphModel(nodeRegistry);
-    connect(primaryDataFlowGraphModel, &DynamicDataFlowGraphModel::viewClosed, this, &ForeachNode::viewClosed);
+    graphModel = new DynamicDataFlowGraphModel(nodeRegistry);
+    connect(graphModel, &DynamicDataFlowGraphModel::viewClosed, this, &ForeachNode::viewClosed);
 
-    scene = new QtNodes::DataFlowGraphicsScene(*primaryDataFlowGraphModel, this);
+    scene = new QtNodes::DataFlowGraphicsScene(*graphModel, this);
+
+    // increase counter each time node starts and finishes computation
+    connect(graphModel,
+            &DynamicDataFlowGraphModel::nodeCreated,
+            this,
+            [this](QtNodes::NodeId nodeId) {
+                graphModel->delegateModel<BaseNodeTypeLessWrapper>(nodeId)->embeddedWidget();
+                connect(
+                        graphModel->delegateModel<QtNodes::NodeDelegateModel>(nodeId),
+                        &QtNodes::NodeDelegateModel::computingStarted, this, [this]() {
+                            counterStarted++;
+                            std::cout << "counterStarted++" << std::endl;
+                        }, Qt::DirectConnection);
+                connect(
+                        graphModel->delegateModel<QtNodes::NodeDelegateModel>(nodeId),
+                        &QtNodes::NodeDelegateModel::computingFinished, this, [this]() {
+                            counterFinished++;
+                            std::cout << "counterFinished++" << std::endl;
+                            if (counterStarted == counterFinished) {
+                                workFinished.release();
+                            }
+                        }, Qt::DirectConnection);
+            });
+
 
     //add input and output nodes, specific only to this dataFlowGraphModel
     ForeachInputNode foreachInputNode;
-    inputNodeId = primaryDataFlowGraphModel->addNode(foreachInputNode.name());
+    inputNodeId = graphModel->addNode(foreachInputNode.name());
     ForeachOutputNode foreachOutputNode;
-    outputNodeId = primaryDataFlowGraphModel->addNode(foreachOutputNode.name());
+    outputNodeId = graphModel->addNode(foreachOutputNode.name());
 
-    auto inputNode = primaryDataFlowGraphModel->delegateModel<ForeachInputNode>(inputNodeId);
+    auto inputNode = graphModel->delegateModel<ForeachInputNode>(inputNodeId);
     assert(inputNode != nullptr);
-    auto outputNode = primaryDataFlowGraphModel->delegateModel<ForeachOutputNode>(outputNodeId);
+    auto outputNode = graphModel->delegateModel<ForeachOutputNode>(outputNodeId);
     assert(outputNode != nullptr);
 
     // make inputNode and outputNode indestructible by calling undo every time input or output nodes are deleted
-    connect(primaryDataFlowGraphModel, &DynamicDataFlowGraphModel::nodeDeleted, [this](QtNodes::NodeId nodeId) {
+    connect(graphModel, &DynamicDataFlowGraphModel::nodeDeleted, [this](QtNodes::NodeId nodeId) {
         if (nodeId == inputNodeId || nodeId == outputNodeId) {
             QTimer::singleShot(0, [this] {
                 scene->undoStack().undo();
             });
         }
     });
-    updateInternalNodeType();
+
 }
 
-void ForeachNode::copyDataFlowGraphModel() {
-    //wait until all work is done
-
-    auto jobs = ThreadPool::get().getJobs(this);
-    for (auto &job: jobs) {
-        if (job->inProgress == true) {
-//            std::cout << "waiting" << std::endl;
-        }
-        while (job->inProgress) {
-
-        }
-        ThreadPool::get().deleteJob(job);
-    }
-    for (int i = 0; i < threadSemaphore.size(); i++) {
-        threadSemaphore[i].semaphore.acquire();
-    }
-    for (int i = 0; i < threadSemaphore.size(); i++) {
-        threadSemaphore[i].semaphore.release();
-    }
-
-
-    for (auto &graphModel: dataFlowGraphModels) {
-//        for (auto node: graphModel->dataFlowGraphModel->allNodeIds()) {
-//            graphModel->dataFlowGraphModel->deleteNode(node);
-//        }
-        delete graphModel->dataFlowGraphModel;
-    }
-
-    dataFlowGraphModels.clear();
-
-    auto json = primaryDataFlowGraphModel->save();
-    for (int i = 0; i < parallelCount; i++) {
-        std::shared_ptr<GraphModel> graphModel = std::make_shared<GraphModel>(
-                new DynamicDataFlowGraphModel(nodeRegistry));
-        dataFlowGraphModels.push_back(graphModel);
-
-        //call embeddedWidget foreach created node, or else load will fail
-        // count how many times nodes have emitted computingStart() and computingFinished() signals
-        // when the same, this means that graphModel have ended its calculations, and the result can be saved
-        connect(graphModel->dataFlowGraphModel,
-                &DynamicDataFlowGraphModel::nodeCreated,
-                this,
-                [graphModel, this](QtNodes::NodeId nodeId) {
-                    std::cout << "newNode" << std::endl;
-
-                    graphModel->dataFlowGraphModel->delegateModel<BaseNodeTypeLessWrapper>(nodeId)->embeddedWidget();
-
-                    connect(
-                            graphModel->dataFlowGraphModel->delegateModel<QtNodes::NodeDelegateModel>(nodeId),
-                            &QtNodes::NodeDelegateModel::computingStarted, this, [&graphModel]() {
-                                graphModel->counterStarted++;
-                                std::cout << "counterStarted++" << std::endl;
-                            }, Qt::DirectConnection);
-
-                    connect(
-                            graphModel->dataFlowGraphModel->delegateModel<QtNodes::NodeDelegateModel>(nodeId),
-                            &QtNodes::NodeDelegateModel::computingFinished, this, [&graphModel]() {
-                                graphModel->counterFinished++;
-                                std::cout << "counterFinished++" << std::endl;
-                                if (graphModel->counterStarted == graphModel->counterFinished) {
-                                    graphModel->workFinished->notify_all();
-                                }
-                            }, Qt::DirectConnection);
-                });
-        //inputNodeId will be the same for each dataFlowGraphModels, no need to store that
-        graphModel->dataFlowGraphModel->load(json);
-    }
-}
 
 void ForeachNode::updateInternalNodeType() {
     //pass data and datatypes to inputNode
@@ -291,25 +219,11 @@ void ForeachNode::updateInternalNodeType() {
     auto types = inputPortTypes;
     // first element in inputPorts is always BaseArrayData
     types[0] = inputArrayValueType;
-    auto inputNode = primaryDataFlowGraphModel->delegateModel<ForeachInputNode>(inputNodeId);
+    auto inputNode = graphModel->delegateModel<ForeachInputNode>(inputNodeId);
     assert(inputNode != nullptr);
     std::vector<std::shared_ptr<BaseData>> d;
-    auto dt = std::make_shared<ForeachInputNodeDataType>(types, d);
+    auto dt = std::make_shared<ForeachInputNodeData>(types, d);
     inputNode->setInData(dt, QtNodes::InvalidPortIndex);
-
-    for (auto &graphModel: dataFlowGraphModels) {
-        inputNode = graphModel->dataFlowGraphModel->delegateModel<ForeachInputNode>(inputNodeId);
-        assert(inputNode != nullptr);
-        dt = std::make_shared<ForeachInputNodeDataType>(types, d);
-        inputNode->setInData(dt, QtNodes::InvalidPortIndex);
-    }
-
-    //listen for data coming from output node
-//    auto outputNode = primaryDataFlowGraphModel->delegateModel<ForeachInputNode>(inputNodeId);
-//
-//    connect(outputNode, &ForeachNode::dataUpdated, this, [](QtNodes::PortIndex) {
-//        //do something about it
-//    });
 }
 
 
@@ -375,26 +289,23 @@ void ForeachNode::inputConnectionDeleted(const QtNodes::ConnectionId &connection
 }
 
 void ForeachNode::viewClosed() {
-    copyDataFlowGraphModel();
     updateExternalOutputPorts();
 }
 
 QJsonObject ForeachNode::save() const {
     QJsonObject modelJson = NodeDelegateModel::save();
-    modelJson["graph"] = primaryDataFlowGraphModel->save();
+    modelJson["graph"] = graphModel->save();
     return modelJson;
 }
 
 void ForeachNode::load(const QJsonObject &json) {
-    primaryDataFlowGraphModel->load(json["graph"].toObject());
-    copyDataFlowGraphModel();
+    graphModel->load(json["graph"].toObject());
     updateExternalOutputPorts();
-
 }
 
 void ForeachNode::updateExternalOutputPorts() {
-    auto outputNode = primaryDataFlowGraphModel->delegateModel<ForeachOutputNode>(outputNodeId);
-    auto data = std::dynamic_pointer_cast<ForeachInputNodeDataType>(outputNode->outData(QtNodes::InvalidPortIndex));
+    auto outputNode = graphModel->delegateModel<ForeachOutputNode>(outputNodeId);
+    auto data = std::dynamic_pointer_cast<ForeachInputNodeData>(outputNode->outData(QtNodes::InvalidPortIndex));
     assert(data != nullptr);
     data->types;
     //wrap each type with array

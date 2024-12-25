@@ -23,7 +23,7 @@ public:
     compute(std::tuple<std::shared_ptr<ArrayData<double>>, std::shared_ptr<ArrayData<double>>> params,
             std::vector<std::shared_ptr<BaseData>> adParams) override;
 
-
+    ~FmModulationNode() override = default;
 };
 
 

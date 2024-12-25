@@ -54,7 +54,7 @@ void ForeachOutputNode::setInData(std::shared_ptr<QtNodes::NodeData> nodeData, c
 
 std::shared_ptr<QtNodes::NodeData> ForeachOutputNode::outData(const QtNodes::PortIndex port) {
     if (port == QtNodes::InvalidPortIndex) {
-        return std::make_shared<ForeachInputNodeDataType>(inputType, inputData);
+        return std::make_shared<ForeachInputNodeData>(inputType, inputData);
     }
     return inputData.at(port);
 }
