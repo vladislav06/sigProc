@@ -5,16 +5,16 @@
 
 #include <QComboBox>
 #include "src/nodes/baseNode.h"
-#include "src/nodes/dataTypes/arrayDataType.h"
+#include "src/nodes/dataTypes/arrayData.h"
 #include "generators/baseGenerator.h"
 #include "generators/sineGenerator.h"
 #include "generators/squareGenerator.h"
 #include "src/nodes/dataInputNodes/generators/offsetGenerator.h"
 
-class GeneratorNode : public BaseNode<std::tuple<>, std::tuple<ArrayDataType<double>>> {
+class GeneratorNode : public BaseNode<std::tuple<>, std::tuple<ArrayData<double>>> {
 public:
-    std::tuple<std::shared_ptr<ArrayDataType<double>>>
-    compute(std::tuple<> params, std::vector<std::shared_ptr<BaseDataType>> adParams) override;
+    std::tuple<std::shared_ptr<ArrayData<double>>>
+    compute(std::tuple<> params, std::vector<std::shared_ptr<BaseData>> adParams) override;
 
     QJsonObject onSave() const override;
 
@@ -38,7 +38,7 @@ private:
     std::vector<BaseGenerator *> generators = {
             new SineGenerator(),
             new SquareGenerator(),
-            new OffsetGenerator()
+            new LineGenerator()
     };
     BaseGenerator *selectedGenerator = generators[0];
     QWidget *base = nullptr;

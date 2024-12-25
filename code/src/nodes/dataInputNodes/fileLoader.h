@@ -6,11 +6,11 @@
 
 #include <QString>
 #include <filesystem>
-#include "src/nodes/dataTypes/arrayDataType.h"
+#include "src/nodes/dataTypes/arrayData.h"
 #include "fstream"
 
-inline std::shared_ptr<ArrayDataType<double>> loadFileWFF(QString path) {
-    auto array = std::make_shared<ArrayDataType<double>>();
+inline std::shared_ptr<ArrayData<double>> loadFileWFF(QString path) {
+    auto array = std::make_shared<ArrayData<double>>();
 
     if (!std::filesystem::exists(path.toStdString())) {
         return array;
@@ -24,7 +24,7 @@ inline std::shared_ptr<ArrayDataType<double>> loadFileWFF(QString path) {
     return array;
 }
 
-inline void saveFileWFF(QString path, std::shared_ptr<ArrayDataType<double>> array) {
+inline void saveFileWFF(QString path, std::shared_ptr<ArrayData<double>> array) {
     std::ofstream fout(path.toStdString());
     for (auto d: array->get()) {
         fout << d << "\n";

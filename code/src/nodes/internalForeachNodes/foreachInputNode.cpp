@@ -54,9 +54,12 @@ void ForeachInputNode::setInData(std::shared_ptr<QtNodes::NodeData> nodeData, co
             outputTypes = data->types;
         }
         outputData = data->data;
+
+        emit computingStarted();
         for (int i = 0; i < outputTypes.size(); i++) {
             emit dataUpdated(i);
         }
+        emit computingFinished();
     }
 }
 

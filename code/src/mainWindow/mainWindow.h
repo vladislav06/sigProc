@@ -18,14 +18,15 @@ private:
     QtNodes::DataFlowGraphicsScene *scene;
     QtNodes::GraphicsView *view;
     DynamicDataFlowGraphModel *dataFlowGraphModel;
+    std::shared_ptr<QtNodes::NodeDelegateModelRegistry> nodeRegistry;
+
     QString currentFile;
     bool dirty;
-    QPushButton* backButton=nullptr;
+    QPushButton *backButton = nullptr;
+
 
 public:
     explicit MainWindow(QWidget *parent = nullptr);
-
-    std::shared_ptr<QtNodes::NodeDelegateModelRegistry> nodeRegistry;
 
 public slots:
 

@@ -5,9 +5,9 @@
 
 #include <QLineEdit>
 #include "src/nodes/baseNode.h"
-#include "src/nodes/dataTypes/objectDataType.h"
+#include "src/nodes/dataTypes/objectData.h"
 
-class SetFieldNode : public BaseNode<std::tuple<ObjectDataType>, std::tuple<ObjectDataType>, BaseDataType> {
+class SetFieldNode : public BaseNode<std::tuple<ObjectData>, std::tuple<ObjectData>, BaseData> {
 public:
     SetFieldNode() {
         addInputPort();
@@ -33,8 +33,8 @@ public slots:
 
     void editingFinished();
 
-    std::tuple<std::shared_ptr<ObjectDataType>> compute(std::tuple<std::shared_ptr<ObjectDataType>> params,
-                                                        std::vector<std::shared_ptr<BaseDataType>> adParams) override;
+    std::tuple<std::shared_ptr<ObjectData>> compute(std::tuple<std::shared_ptr<ObjectData>> params,
+                                                    std::vector<std::shared_ptr<BaseData>> adParams) override;
 
 
 private:

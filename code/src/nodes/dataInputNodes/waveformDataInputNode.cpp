@@ -4,7 +4,7 @@
 #include "fileLoader.h"
 
 #include "waveformDataInputNode.h"
-#include "src/nodes/dataTypes/arrayDataType.h"
+#include "src/nodes/dataTypes/arrayData.h"
 #include <QtWidgets>
 
 WaveformDataInputNode::WaveformDataInputNode() {
@@ -32,17 +32,17 @@ bool WaveformDataInputNode::onLoad(QJsonObject json) {
     return true;
 }
 
-std::tuple<std::shared_ptr<ArrayDataType<double>>>
-WaveformDataInputNode::compute(std::tuple<std::shared_ptr<FileDataType>> params,
-                               std::vector<std::shared_ptr<BaseDataType>> adParams) {
+std::tuple<std::shared_ptr<ArrayData<double>>>
+WaveformDataInputNode::compute(std::tuple<std::shared_ptr<FileData>> params,
+                               std::vector<std::shared_ptr<BaseData>> adParams) {
     auto file = std::get<0>(params);
 
     if (file == nullptr) {
         return {};
     }
 
-    //load file in to ArrayDataType
-    auto array = std::make_shared<ArrayDataType<double>>();
+    //load file in to ArrayData
+    auto array = std::make_shared<ArrayData<double>>();
 
     std::ifstream fin;
     if (!file->inputStream(fin)) {

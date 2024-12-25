@@ -36,8 +36,8 @@ public:
 private:
     bool dirtyInputConnections = false;
     std::vector<QtNodes::NodeDataType> inputType{
-            BaseDataType::DataType::getNodeDataType(),
+            BaseData::DataType::getNodeDataType(),
     };
 
-    std::vector<std::shared_ptr<BaseDataType>> inputData;
+    std::vector<std::shared_ptr<BaseData>> inputData;
 };

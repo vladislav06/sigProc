@@ -4,17 +4,17 @@
 
 #pragma once
 
-#include "baseDataType.h"
-#include "nodeDataTypeType.h"
-#include "src/utils/stringType.h"
-#include "src/utils/concepts.h"
-#include "src/utils/stringType.h"
+#include "baseData.h"
+#include "nodeDataType.h"
+#include "stringType.h"
+#include "concepts.h"
+#include "stringType.h"
 
-class BaseArrayDataType : public BaseDataType {
+class BaseArrayData : public BaseData {
 public:
-    BaseArrayDataType() = default;
+    BaseArrayData() = default;
 
-    using DataType = NodeDataTypeType<"BaseArray", "Array">;
+    using DataType = NodeDataType<"BaseArray", "Array">;
     DataType nodeType;
 
     QtNodes::NodeDataType type() const override {
@@ -30,20 +30,20 @@ public:
     }
 
     /**
-     * Will extract type that is stored in array with this NodeDataType, returns empty type if type is not ArrayDataType
+     * Will extract type that is stored in array with this NodeDataType, returns empty type if type is not ArrayData
      * @param type type from witch to extract type
      * @return
      */
     static QtNodes::NodeDataType getValueType(QtNodes::NodeDataType arrayType) {
-        //arrayType must inherit from BaseArrayDataType
-        if (!NodeDataTypeTypeHelpers::inherits(arrayType, DataType::getNodeDataType())) {
+        //arrayType must inherit from BaseArrayData
+        if (!NodeDataTypeHelpers::inherits(arrayType, DataType::getNodeDataType())) {
             return {};
         }
         auto baseArrayType = DataType::getNodeDataType();
         baseArrayType.id = baseArrayType.id + "_Array";
 
-        auto valueType = NodeDataTypeTypeHelpers::getExtendedPart(arrayType, baseArrayType);
-        valueType.name = NodeDataTypeTypeHelpers::getName(valueType);
+        auto valueType = NodeDataTypeHelpers::getExtendedPart(arrayType, baseArrayType);
+        valueType.name = NodeDataTypeHelpers::getName(valueType);
         return valueType;
     }
 
@@ -61,45 +61,45 @@ public:
     }
 
 
-    ~BaseArrayDataType() override = default;
+    ~BaseArrayData() override = default;
 };
 
 /**
- * Holds variable length array of shared_ptr to BaseDataType
+ * Holds variable length array of shared_ptr to BaseData
  */
 template<typename T>
-class ArrayDataType;
+class ArrayData;
 
 /**
- * Class for ArrayDataType with type std::shared_ptr<BaseDataType>
+ * Class for ArrayData with type std::shared_ptr<BaseData>
  */
-class BaseDataTypeArrayDataType : public BaseArrayDataType {
+class BaseDataArrayData : public BaseArrayData {
 public:
     virtual size_t size() = 0;
 
-    virtual std::shared_ptr<BaseDataType> at(size_t i) = 0;
+    virtual std::shared_ptr<BaseData> at(size_t i) = 0;
 };
 
-template<SharedPtrToBaseDataType T>
-class ArrayDataType<T> : public BaseDataTypeArrayDataType {
+template<SharedPtrToBaseData T>
+class ArrayData<T> : public BaseDataArrayData {
 public:
 
 //    static constexpr StringType i = (StringType) T::element_type::DataType::id+ "_Array";
-    using DataType = NodeDataTypeType<
+    using DataType = NodeDataType<
             "Array_" + T::element_type::DataType::ID,
             "array<" + T::element_type::DataType::NAME + ">",
-            BaseArrayDataType>;
+            BaseArrayData>;
 
     DataType nodeType;
 
 
-    ArrayDataType()
+    ArrayData()
             : data() {}
 
-    explicit ArrayDataType(std::vector<T> const number)
+    explicit ArrayData(std::vector<T> const number)
             : data(number) {}
 
-    ~ArrayDataType() override = default;
+    ~ArrayData() override = default;
 
 
     QtNodes::NodeDataType type() const override {
@@ -130,7 +130,7 @@ public:
         return data.size();
     }
 
-    std::shared_ptr<BaseDataType> at(size_t i) override {
+    std::shared_ptr<BaseData> at(size_t i) override {
         if (i >= data.size()) {
             return nullptr;
         }
@@ -141,12 +141,12 @@ public:
         QString str = "[";
         for (int i = 0; i < data.size(); i++) {
 
-            if constexpr (SharedPtrToBaseDataType<T>) {
+            if constexpr (SharedPtrToBaseData<T>) {
                 if (data[i] == nullptr) {
                     continue;
                 }
                 str += data[i]->toString();
-            } else if constexpr (baseDataType<T>) {
+            } else if constexpr (baseData<T>) {
                 str += data[i].toString();
             } else {
                 str += std::to_string(data[i]);
@@ -169,20 +169,20 @@ private:
  * Holds variable length array of double
  */
 template<>
-class ArrayDataType<double> : public BaseArrayDataType {
+class ArrayData<double> : public BaseArrayData {
 public:
-    using DataType = NodeDataTypeType<"Array_Double", "array<double>", BaseArrayDataType>;
+    using DataType = NodeDataType<"Array_Double", "array<double>", BaseArrayData>;
 
     DataType nodeType;
 
 
-    ArrayDataType()
+    ArrayData()
             : data() {}
 
-    explicit ArrayDataType(std::vector<double> const number)
+    explicit ArrayData(std::vector<double> const number)
             : data(number) {}
 
-    ~ArrayDataType() override = default;
+    ~ArrayData() override = default;
 
 
     QtNodes::NodeDataType type() const override {

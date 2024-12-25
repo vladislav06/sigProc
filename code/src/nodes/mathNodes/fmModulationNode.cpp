@@ -26,16 +26,16 @@ QWidget *FmModulationNode::embeddedWidget() {
 }
 
 
-std::tuple<std::shared_ptr<ArrayDataType<double>>> FmModulationNode::compute(
-        std::tuple<std::shared_ptr<ArrayDataType<double>>, std::shared_ptr<ArrayDataType<double>>> params,
-        std::vector<std::shared_ptr<BaseDataType>> adParams) {
+std::tuple<std::shared_ptr<ArrayData<double>>> FmModulationNode::compute(
+        std::tuple<std::shared_ptr<ArrayData<double>>, std::shared_ptr<ArrayData<double>>> params,
+        std::vector<std::shared_ptr<BaseData>> adParams) {
     if (std::get<0>(params) == nullptr || std::get<1>(params) == nullptr) {
         return {};
     }
 
     auto carrier = std::get<0>(params);
     auto modulator = std::get<1>(params);
-    auto result = std::make_shared<ArrayDataType<double>>();
+    auto result = std::make_shared<ArrayData<double>>();
 
     /*
      * to modulate carrier, skip or interpolate amount of samples in carrier specified in modulator

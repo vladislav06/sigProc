@@ -3,9 +3,9 @@
 //
 #pragma once
 
-#include "src/nodes/dataTypes/objectDataType.h"
+#include "src/nodes/dataTypes/objectData.h"
 
-class ObjectCreateNode : public BaseNode<std::tuple<>, std::tuple<ObjectDataType>> {
+class ObjectCreateNode : public BaseNode<std::tuple<>, std::tuple<ObjectData>> {
 public:
 
     QJsonObject onSave() const override {
@@ -28,9 +28,9 @@ public:
         return nullptr;
     }
 
-    std::tuple<std::shared_ptr<ObjectDataType>>
-    compute(std::tuple<> params, std::vector<std::shared_ptr<BaseDataType>> adParams) override {
-        return {std::make_shared<ObjectDataType>()};
+    std::tuple<std::shared_ptr<ObjectData>>
+    compute(std::tuple<> params, std::vector<std::shared_ptr<BaseData>> adParams) override {
+        return {std::make_shared<ObjectData>()};
     }
 
     bool isSource() override {

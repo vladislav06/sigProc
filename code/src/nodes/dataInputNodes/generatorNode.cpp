@@ -4,8 +4,8 @@
 
 #include "generatorNode.h"
 
-std::tuple<std::shared_ptr<ArrayDataType<double>>>
-GeneratorNode::compute(std::tuple<> params, std::vector<std::shared_ptr<BaseDataType>> adParams) {
+std::tuple<std::shared_ptr<ArrayData<double>>>
+GeneratorNode::compute(std::tuple<> params, std::vector<std::shared_ptr<BaseData>> adParams) {
     if (selectedGenerator != nullptr) {
         return selectedGenerator->generate();
     }

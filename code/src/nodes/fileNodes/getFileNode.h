@@ -4,9 +4,9 @@
 #pragma once
 
 #include "src/nodes/baseNode.h"
-#include "src/nodes/dataTypes/folderDataType.h"
+#include "src/nodes/dataTypes/folderData.h"
 
-class GetFileNode : public BaseNode<std::tuple<FolderDataType>, std::tuple<ArrayDataType<std::shared_ptr<FileDataType>>>> {
+class GetFileNode : public BaseNode<std::tuple<FolderData>, std::tuple<ArrayData<std::shared_ptr<FileData>>>> {
 public:
     QString caption() const override;
 
@@ -14,8 +14,8 @@ public:
 
     QWidget *embeddedWidget() override;
 
-    std::tuple<std::shared_ptr<ArrayDataType<std::shared_ptr<FileDataType>>>> compute(std::tuple<std::shared_ptr<FolderDataType>> params,
-                                                                     std::vector<std::shared_ptr<BaseDataType>> adParams) override;
+    std::tuple<std::shared_ptr<ArrayData<std::shared_ptr<FileData>>>> compute(std::tuple<std::shared_ptr<FolderData>> params,
+                                                                              std::vector<std::shared_ptr<BaseData>> adParams) override;
 
     QJsonObject onSave() const override;
 

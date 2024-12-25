@@ -4,10 +4,10 @@
 #pragma once
 
 #include <tuple>
-#include "src/nodes/dataTypes/arrayDataType.h"
+#include "src/nodes/dataTypes/arrayData.h"
 #include "src/nodes/baseNode.h"
 #include "ui_waveformDataOutputNode.h"
-class WaveformDataOutputNode : public BaseNode<std::tuple<ArrayDataType<double>>, std::tuple<>> {
+class WaveformDataOutputNode : public BaseNode<std::tuple<ArrayData<double>>, std::tuple<>> {
 public:
     WaveformDataOutputNode();
 
@@ -21,8 +21,8 @@ public:
 
     bool onLoad(QJsonObject json) override;
 
-    std::tuple<> compute(std::tuple<std::shared_ptr<ArrayDataType<double>>> params,
-                         std::vector<std::shared_ptr<BaseDataType>> adParams) override;
+    std::tuple<> compute(std::tuple<std::shared_ptr<ArrayData<double>>> params,
+                         std::vector<std::shared_ptr<BaseData>> adParams) override;
 
 private Q_SLOTS:
 

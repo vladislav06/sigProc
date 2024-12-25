@@ -6,7 +6,7 @@
 #include "src/nodes/baseNode.h"
 
 class FmModulationNode
-        : public BaseNode<std::tuple<ArrayDataType<double>, ArrayDataType<double>>, std::tuple<ArrayDataType<double>>> {
+        : public BaseNode<std::tuple<ArrayData<double>, ArrayData<double>>, std::tuple<ArrayData<double>>> {
 public:
 
     QJsonObject onSave() const override;
@@ -19,9 +19,9 @@ public:
 
     QWidget *embeddedWidget() override;
 
-    std::tuple<std::shared_ptr<ArrayDataType<double>>>
-    compute(std::tuple<std::shared_ptr<ArrayDataType<double>>, std::shared_ptr<ArrayDataType<double>>> params,
-            std::vector<std::shared_ptr<BaseDataType>> adParams) override;
+    std::tuple<std::shared_ptr<ArrayData<double>>>
+    compute(std::tuple<std::shared_ptr<ArrayData<double>>, std::shared_ptr<ArrayData<double>>> params,
+            std::vector<std::shared_ptr<BaseData>> adParams) override;
 
 
 };

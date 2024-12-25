@@ -5,26 +5,26 @@
 #pragma once
 
 #include <format>
-#include "src/nodes/dataTypes/baseDataType.h"
+#include "src/nodes/dataTypes/baseData.h"
 
 
 template<class T>
-concept baseDataType = std::is_base_of_v<BaseDataType, T> && requires(T){
+concept baseData = std::is_base_of_v<BaseData, T> && requires(T){
     typename T::DataType;
 };
 
 template<class T>
-concept SharedPtrToBaseDataType=requires(T){
+concept SharedPtrToBaseData=requires(T){
     typename T::element_type;
     typename T::element_type::DataType;
-    baseDataType<typename T::element_type>;
+    baseData<typename T::element_type>;
 } && std::is_same_v<std::shared_ptr<typename T::element_type>, T>;
 
 
 //concept to check if all types in a tuple are derived from Base
 template<typename Tuple, std::size_t... Is>
 constexpr bool TupleOfDerivedFromBaseImpl(std::index_sequence<Is...>) {
-    return (baseDataType<std::tuple_element_t<Is, Tuple>> && ...);
+    return (baseData<std::tuple_element_t<Is, Tuple>> && ...);
 }
 
 template<typename Tuple>
@@ -35,5 +35,5 @@ template<typename T>
 concept tuple = TupleOfDerivedFromBase<T>;
 
 
-static_assert(SharedPtrToBaseDataType<std::shared_ptr<BaseDataType>>);
+static_assert(SharedPtrToBaseData<std::shared_ptr<BaseData>>);
 

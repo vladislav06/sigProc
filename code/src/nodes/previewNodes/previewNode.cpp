@@ -36,8 +36,8 @@ QWidget *PreviewNode::embeddedWidget() {
 }
 
 
-std::tuple<std::shared_ptr<BaseDataType>> PreviewNode::compute(std::tuple<std::shared_ptr<BaseDataType>> params,
-                                                               std::vector<std::shared_ptr<BaseDataType>> adParams) {
+std::tuple<std::shared_ptr<BaseData>> PreviewNode::compute(std::tuple<std::shared_ptr<BaseData>> params,
+                                                           std::vector<std::shared_ptr<BaseData>> adParams) {
     parameters = params;
     auto obj = std::get<0>(params);
     return params;

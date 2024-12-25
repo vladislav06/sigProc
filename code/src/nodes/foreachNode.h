@@ -9,8 +9,8 @@
 #include "QtNodes/GraphicsView"
 #include "QtNodes/DataFlowGraphicsScene"
 #include "dynamicDataFlowGraphModel.h"
-#include "src/nodes/dataTypes/baseDataType.h"
-#include "src/nodes/dataTypes/arrayDataType.h"
+#include "src/nodes/dataTypes/baseData.h"
+#include "src/nodes/dataTypes/arrayData.h"
 #include "baseNode.h"
 #include "src/globals.h"
 
@@ -71,24 +71,24 @@ private:
 //    /**
 //     * Array that currently is being processed
 //     */
-//    std::shared_ptr<BaseDataTypeArrayDataType> processedArray;
+//    std::shared_ptr<BaseDataArrayData> processedArray;
 
     QtNodes::DataFlowGraphicsScene *scene;
 
-    // this node accepts any BaseDataType array as first input and BaseDataType as other inputs,
+    // this node accepts any BaseData array as first input and BaseData as other inputs,
     // but actual type of connections must be known to pass it to internal dataFlowGraphModel,
     // so, when connection is created, actual type is saved, and when connection is removed,
-    // port is either deleted, or type is reset to BaseDataType array for first port or BaseDataType to all other ports
+    // port is either deleted, or type is reset to BaseData array for first port or BaseData to all other ports
     std::vector<QtNodes::NodeDataType> inputPortTypes = {
-            ArrayDataType<std::shared_ptr<BaseDataType>>::DataType::getNodeDataType(),
-            BaseDataType::DataType::getNodeDataType()
+            ArrayData<std::shared_ptr<BaseData>>::DataType::getNodeDataType(),
+            BaseData::DataType::getNodeDataType()
     };
 
 
     /**
      * temporary array for storing output value
      */
-    std::vector<std::vector<std::shared_ptr<BaseDataType>>> resultsArray{};
+    std::vector<std::vector<std::shared_ptr<BaseData>>> resultsArray{};
     std::mutex resultsMutex;
 
 
@@ -97,10 +97,10 @@ private:
     /**
      * Stores type of value that is stored in primary array that is being processed
      */
-    QtNodes::NodeDataType inputArrayValueType = BaseDataType::DataType::getNodeDataType();
+    QtNodes::NodeDataType inputArrayValueType = BaseData::DataType::getNodeDataType();
 
-    std::vector<std::shared_ptr<BaseDataType>> inputPorts = {nullptr};
-    std::vector<std::shared_ptr<ArrayDataType<std::shared_ptr<BaseDataType>>>> outputPorts = {};
+    std::vector<std::shared_ptr<BaseData>> inputPorts = {nullptr};
+    std::vector<std::shared_ptr<ArrayData<std::shared_ptr<BaseData>>>> outputPorts = {};
 
     /**
      * ForeachInputNode id that is added to dataFlowGraphModel on creation
@@ -124,6 +124,7 @@ private:
 public:
 
     ForeachNode() {
+
 
     }
 

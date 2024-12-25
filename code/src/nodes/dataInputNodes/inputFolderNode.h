@@ -6,9 +6,9 @@
 #include <QLineEdit>
 #include <QPushButton>
 #include "src/nodes/baseNode.h"
-#include "src/nodes/dataTypes/folderDataType.h"
+#include "src/nodes/dataTypes/folderData.h"
 
-class InputFolderNode : public BaseNode<std::tuple<>, std::tuple<FolderDataType>> {
+class InputFolderNode : public BaseNode<std::tuple<>, std::tuple<FolderData>> {
 public:
     QString caption() const override;
 
@@ -16,8 +16,8 @@ public:
 
     QWidget *embeddedWidget() override;
 
-    std::tuple<std::shared_ptr<FolderDataType>>
-    compute(std::tuple<> params, std::vector<std::shared_ptr<BaseDataType>> adParams) override;
+    std::tuple<std::shared_ptr<FolderData>>
+    compute(std::tuple<> params, std::vector<std::shared_ptr<BaseData>> adParams) override;
 
     QJsonObject onSave() const override;
 

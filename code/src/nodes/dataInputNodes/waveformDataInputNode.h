@@ -6,9 +6,9 @@
 #include <QtWidgets>
 #include "src/nodes/baseNode.h"
 #include "ui_waveformDataInputNode.h"
-#include "src/nodes/dataTypes/fileDataType.h"
+#include "src/nodes/dataTypes/fileData.h"
 
-class WaveformDataInputNode : public BaseNode<std::tuple<FileDataType>, std::tuple<ArrayDataType<double>>> {
+class WaveformDataInputNode : public BaseNode<std::tuple<FileData>, std::tuple<ArrayData<double>>> {
 public:
 
 
@@ -25,9 +25,9 @@ public:
 
     bool onLoad(QJsonObject json) override;
 
-    std::tuple<std::shared_ptr<ArrayDataType<double>>>
-    compute(std::tuple<std::shared_ptr<FileDataType>> params,
-            std::vector<std::shared_ptr<BaseDataType>> adParams) override;
+    std::tuple<std::shared_ptr<ArrayData<double>>>
+    compute(std::tuple<std::shared_ptr<FileData>> params,
+            std::vector<std::shared_ptr<BaseData>> adParams) override;
 };
 
 

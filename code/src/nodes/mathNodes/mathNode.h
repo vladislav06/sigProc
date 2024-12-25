@@ -16,7 +16,7 @@
 #include "operations/multiplicationOperation.h"
 #include "operations/divisionOperation.h"
 
-#define TYPE ArrayDataType<T>
+#define TYPE ArrayData<T>
 
 template<typename T>
 class MathNode : public BaseNode<std::tuple<TYPE, TYPE >, std::tuple<TYPE>> {
@@ -74,6 +74,7 @@ public slots:
         popup->show();
     }
 
+public:
     QJsonObject onSave() const override {
         return {
                 {"op", (qint64) typeid(*selectedOp).hash_code()},
@@ -111,9 +112,9 @@ public slots:
         }
     }
 
-    std::tuple<std::shared_ptr<ArrayDataType<T>>>
-    compute(std::tuple<std::shared_ptr<ArrayDataType<T>>, std::shared_ptr<ArrayDataType<T>>> params,
-            std::vector<std::shared_ptr<BaseDataType>> adParams) override {
+    std::tuple<std::shared_ptr<ArrayData<T>>>
+    compute(std::tuple<std::shared_ptr<ArrayData<T>>, std::shared_ptr<ArrayData<T>>> params,
+            std::vector<std::shared_ptr<BaseData>> adParams) override {
         return {selectedOp->compute(std::get<0>(params), std::get<1>(params))};
     }
 
@@ -124,7 +125,7 @@ private:
     QWidget *popup = nullptr;
 
 
-    struct Group {
+    struct OpGroup {
         QString name;
         std::vector<BaseOperation<TYPE > *> ops;
     };
@@ -132,18 +133,15 @@ private:
     /**
      * Configuration structure that holds groups with operations
      */
-    std::vector<Group> groups = {
+    std::vector<OpGroup> groups = {
             {.name="Math", .ops={
                     new AdditionOperation<TYPE >(),
-            }},
-            {.name="Math", .ops={
                     new SubtractionOperation<TYPE >(),
             }},
             {.name="Math", .ops={
                     new MultiplicationOperation<TYPE >(),
-            }},
-            {.name="Math", .ops={
                     new DivisionOperation<TYPE >(),
+
             }},
     };
 };

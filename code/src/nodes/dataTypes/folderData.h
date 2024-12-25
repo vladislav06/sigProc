@@ -5,18 +5,18 @@
 
 #include <utility>
 #include <QDir>
-#include "baseDataType.h"
-#include "fileDataType.h"
-#include "arrayDataType.h"
+#include "baseData.h"
+#include "fileData.h"
+#include "arrayData.h"
 
-class FolderDataType : public BaseDataType {
+class FolderData : public BaseData {
 public:
-    using DataType = NodeDataTypeType<"Folder", "folder">;
+    using DataType = NodeDataType<"Folder", "folder">;
     DataType nodeType;
 
-    explicit FolderDataType(QString path) : folderPath(std::move(path)) {}
+    explicit FolderData(QString path) : folderPath(std::move(path)) {}
 
-    ~FolderDataType() override = default;
+    ~FolderData() override = default;
 
     QtNodes::NodeDataType type() const override {
         return nodeType.getNodeDataType();
@@ -34,26 +34,26 @@ public:
         folderPath = std::move(path);
     }
 
-    std::vector<FolderDataType> getFolders() {
+    std::vector<FolderData> getFolders() {
         QDir directory(folderPath);
         if (!directory.exists()) {
             return {};
         }
-        std::vector<FolderDataType> folders;
+        std::vector<FolderData> folders;
         for (auto dir: directory.entryList(QDir::Dirs)) {
             folders.emplace_back(dir);
         }
         return folders;
     }
 
-    std::shared_ptr<ArrayDataType<std::shared_ptr<FileDataType>>> getFiles() {
+    std::shared_ptr<ArrayData<std::shared_ptr<FileData>>> getFiles() {
         QDir directory(folderPath);
         if (!directory.exists()) {
             return {};
         }
-        auto files = std::make_shared<ArrayDataType<std::shared_ptr<FileDataType>>>();
+        auto files = std::make_shared<ArrayData<std::shared_ptr<FileData>>>();
         for (auto file: directory.entryList(QDir::Files)) {
-            auto f = std::make_shared<FileDataType>(folderPath + QDir::separator() + file);
+            auto f = std::make_shared<FileData>(folderPath + QDir::separator() + file);
             files->get().push_back(f);
         }
         return files;

@@ -46,14 +46,14 @@ void ForeachNode::setInData(std::shared_ptr<QtNodes::NodeData> nodeData, const Q
     if (nodeData == nullptr) {
         return;
     }
-    auto data = std::dynamic_pointer_cast<BaseDataType>(nodeData);
+    auto data = std::dynamic_pointer_cast<BaseData>(nodeData);
     assert(data != nullptr);
     workSemaphore.acquire();
 
     inputPorts.at(portIndex) = data;
     //start parallel processing
     //divide input array into even chunks
-    auto array = std::dynamic_pointer_cast<BaseDataTypeArrayDataType>(inputPorts[0]);
+    auto array = std::dynamic_pointer_cast<BaseDataArrayData>(inputPorts[0]);
     assert(array != nullptr);
     int chunkSize = std::ceil((float) array->size() / (float) parallelCount);
     if (chunkSize == 0) {
@@ -90,7 +90,7 @@ void ForeachNode::setInData(std::shared_ptr<QtNodes::NodeData> nodeData, const Q
             auto inputNode = graphModel->dataFlowGraphModel->delegateModel<ForeachInputNode>(inputNodeId);
             auto outputNode = graphModel->dataFlowGraphModel->delegateModel<ForeachOutputNode>(outputNodeId);
 
-            std::vector<std::vector<std::shared_ptr<BaseDataType>>> results;
+            std::vector<std::vector<std::shared_ptr<BaseData>>> results;
             for (auto index: chunk) {
                 auto types = inputPortTypes;
                 auto data = inputPorts;
@@ -134,12 +134,12 @@ void ForeachNode::setInData(std::shared_ptr<QtNodes::NodeData> nodeData, const Q
         threadSemaphore[i].semaphore.acquire();
         threadSemaphore[i].semaphore.release();
     }
-    //convert resultsArray in to array of ArrayDataType
+    //convert resultsArray in to array of ArrayData
 
     //fill outputPorts
     outputPorts.resize(outputPortTypes.size());
     for (int i = 0; i < outputPortTypes.size(); i++) {
-        outputPorts[i] = std::make_shared<ArrayDataType<std::shared_ptr<BaseDataType>>>();
+        outputPorts[i] = std::make_shared<ArrayData<std::shared_ptr<BaseData>>>();
     }
     for (auto result: resultsArray) {
         for (int i = 0; i < result.size(); i++) {
@@ -222,7 +222,7 @@ void ForeachNode::copyDataFlowGraphModel() {
     auto jobs = ThreadPool::get().getJobs(this);
     for (auto &job: jobs) {
         if (job->inProgress == true) {
-            std::cout << "waiting" << std::endl;
+//            std::cout << "waiting" << std::endl;
         }
         while (job->inProgress) {
 
@@ -289,11 +289,11 @@ void ForeachNode::updateInternalNodeType() {
     //pass data and datatypes to inputNode
 
     auto types = inputPortTypes;
-    // first element in inputPorts is always BaseArrayDataType
+    // first element in inputPorts is always BaseArrayData
     types[0] = inputArrayValueType;
     auto inputNode = primaryDataFlowGraphModel->delegateModel<ForeachInputNode>(inputNodeId);
     assert(inputNode != nullptr);
-    std::vector<std::shared_ptr<BaseDataType>> d;
+    std::vector<std::shared_ptr<BaseData>> d;
     auto dt = std::make_shared<ForeachInputNodeDataType>(types, d);
     inputNode->setInData(dt, QtNodes::InvalidPortIndex);
 
@@ -329,7 +329,7 @@ void ForeachNode::onInputConnectionCreation(QtNodes::ConnectionId connection, Qt
     //save type of main array port
     if (connection.inPortIndex == 0) {
         inputPortTypes[0] = type;
-        inputArrayValueType = BaseArrayDataType::getValueType(type);
+        inputArrayValueType = BaseArrayData::getValueType(type);
     } else {
         //save type of additional data ports
         if (connection.inPortIndex >= inputPortTypes.size()) {
@@ -344,7 +344,7 @@ void ForeachNode::onInputConnectionCreation(QtNodes::ConnectionId connection, Qt
         //add new input connection with DataBaseType at the end
         int newPortIndex = inputPortTypes.size();
         portsAboutToBeInserted(QtNodes::PortType::In, newPortIndex, newPortIndex);
-        inputPortTypes.push_back(BaseDataType::DataType::getNodeDataType());
+        inputPortTypes.push_back(BaseData::DataType::getNodeDataType());
         portsInserted();
 
     }
@@ -358,11 +358,11 @@ void ForeachNode::inputConnectionDeleted(const QtNodes::ConnectionId &connection
     }
     dirtyInputConnections = true;
     if (connection.inPortIndex == 0) {
-        inputPortTypes[0] = ArrayDataType<std::shared_ptr<BaseDataType>>::DataType::getNodeDataType();
+        inputPortTypes[0] = ArrayData<std::shared_ptr<BaseData>>::DataType::getNodeDataType();
     } else {
 //            if (connection.inPortIndex == 1) {
 //                //reset port type
-//                inputPortTypes[connection.inPortIndex] = BaseDataType::DataType::getNodeDataType();
+//                inputPortTypes[connection.inPortIndex] = BaseData::DataType::getNodeDataType();
 //            }
         //delete disconnected port
         int index = connection.inPortIndex;
@@ -399,7 +399,7 @@ void ForeachNode::updateExternalOutputPorts() {
     data->types;
     //wrap each type with array
     for (auto &type: data->types) {
-        type = BaseArrayDataType::wrapWithArray(type);
+        type = BaseArrayData::wrapWithArray(type);
     }
     outputPortTypes = data->types;
     emit embeddedWidgetSizeUpdated();

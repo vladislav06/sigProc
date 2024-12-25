@@ -20,12 +20,12 @@ public:
 };
 
 template<typename T>
-class MultiplicationOperation<ArrayDataType<T>> : public BaseOperation<ArrayDataType<T>> {
+class MultiplicationOperation<ArrayData<T>> : public BaseOperation<ArrayData<T>> {
 public:
 
-    std::shared_ptr<ArrayDataType<T>>
-    compute(std::shared_ptr<ArrayDataType<T>> t1, std::shared_ptr<ArrayDataType<T>> t2) override {
-        auto out = std::make_shared<ArrayDataType<T>>();
+    std::shared_ptr<ArrayData<T>>
+    compute(std::shared_ptr<ArrayData<T>> t1, std::shared_ptr<ArrayData<T>> t2) override {
+        auto out = std::make_shared<ArrayData<T>>();
         if (t1 == nullptr || t2 == nullptr) {
             return out;
         }

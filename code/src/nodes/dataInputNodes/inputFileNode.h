@@ -6,9 +6,9 @@
 #include <QLineEdit>
 #include <QPushButton>
 #include "src/nodes/baseNode.h"
-#include "src/nodes/dataTypes/fileDataType.h"
+#include "src/nodes/dataTypes/fileData.h"
 
-class InputFileNode : public BaseNode<std::tuple<>,std::tuple<FileDataType>>{
+class InputFileNode : public BaseNode<std::tuple<>,std::tuple<FileData>>{
 public:
     QString caption() const override;
 
@@ -16,8 +16,8 @@ public:
 
     QWidget *embeddedWidget() override;
 
-    std::tuple<std::shared_ptr<FileDataType>>
-    compute(std::tuple<> params, std::vector<std::shared_ptr<BaseDataType>> adParams) override;
+    std::tuple<std::shared_ptr<FileData>>
+    compute(std::tuple<> params, std::vector<std::shared_ptr<BaseData>> adParams) override;
 
     QJsonObject onSave() const override;
 

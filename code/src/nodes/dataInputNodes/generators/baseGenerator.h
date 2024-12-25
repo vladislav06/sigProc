@@ -3,7 +3,7 @@
 //
 #pragma once
 
-#include "src/nodes/dataTypes/arrayDataType.h"
+#include "src/nodes/dataTypes/arrayData.h"
 #include "QWidget"
 #include "QObject"
 
@@ -21,7 +21,7 @@ public:
      */
     virtual QWidget *getWidgets() = 0;
 
-    virtual std::shared_ptr<ArrayDataType<double>> generate() = 0;
+    virtual std::shared_ptr<ArrayData<double>> generate() = 0;
 
     virtual QJsonObject onSave() = 0;
 

@@ -57,7 +57,7 @@ public:
         return base;
     }
 
-    std::shared_ptr<ArrayDataType<double>> generate() override {
+    std::shared_ptr<ArrayData<double>> generate() override {
         int len = length->value() * (double) samplingRate->value();
         double fr = freq->value() / (double) samplingRate->value();
         double ph = phase->value();
@@ -66,7 +66,7 @@ public:
         double dut = 1.0-duty->value();
 
 
-        auto array = std::make_shared<ArrayDataType<double>>();
+        auto array = std::make_shared<ArrayData<double>>();
         array->get().resize(len);
         for (int i = 0; i < len; i++) {
             array->get()[i] = am * std::floor(cos(fr * (double) i + ph+dut*M_PI+M_PI) * 0.5 + (cos(dut*M_PI)*0.5+1)) + off;

@@ -4,7 +4,7 @@
 #pragma once
 
 #include "src/nodes/baseNode.h"
-#include "src/nodes/dataTypes/arrayDataType.h"
+#include "src/nodes/dataTypes/arrayData.h"
 #include <QLineSeries>
 #include <QChartView>
 #include <QValueAxis>
@@ -12,7 +12,7 @@
 #include "QChart"
 
 template<typename T>
-class GraphPreviewNode : public BaseNode<std::tuple<>, std::tuple<>, ArrayDataType<T>> {
+class GraphPreviewNode : public BaseNode<std::tuple<>, std::tuple<>, ArrayData<T>> {
 public:
     GraphPreviewNode() {
         this->addInputPort();
@@ -58,7 +58,7 @@ public:
         return base;
     }
 
-    std::tuple<> compute(std::tuple<> params, std::vector<std::shared_ptr<ArrayDataType<T>>> adParams) override {
+    std::tuple<> compute(std::tuple<> params, std::vector<std::shared_ptr<ArrayData<T>>> adParams) override {
         maxX = 0;
         maxY = INT32_MIN;
         minY = INT32_MAX;
@@ -69,7 +69,7 @@ public:
         }
         pointLists.clear();
 
-        for (std::shared_ptr<ArrayDataType<T>> array: adParams) {
+        for (std::shared_ptr<ArrayData<T>> array: adParams) {
             if (array == nullptr) {
                 continue;
             }

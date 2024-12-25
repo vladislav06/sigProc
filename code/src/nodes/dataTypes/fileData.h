@@ -3,17 +3,17 @@
 //
 #pragma once
 
-#include "baseDataType.h"
+#include "baseData.h"
 #include "fstream"
 #include "QFile"
-class FileDataType : public BaseDataType {
+class FileData : public BaseData {
 public:
-    using DataType = NodeDataTypeType<"File", "file">;
+    using DataType = NodeDataType<"File", "file">;
     DataType nodeType;
 
-    explicit FileDataType(QString path) : filePath(std::move(path)) {}
+    explicit FileData(QString path) : filePath(std::move(path)) {}
 
-    ~FileDataType() override = default;
+    ~FileData() override = default;
 
     QtNodes::NodeDataType type() const override {
         return nodeType.getNodeDataType();
@@ -79,7 +79,7 @@ private:
     QString filePath;
 };
 
-inline std::string to_string(FileDataType &t) {
+inline std::string to_string(FileData &t) {
     return t.toString().toStdString();
 }
 

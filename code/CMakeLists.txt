@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.28)
 project(sigProc)
-
-set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(CMAKE_CXX_STANDARD 20)
 
 #find qt, QtNodes, CGAL
 #fftw and gtest doesn't need to be found
@@ -25,6 +25,8 @@ set(CMAKE_AUTOUIC ON)
 set(BUILD_SHARED_LIBS ON)
 set(CGAL_DO_NOT_WARN_ABOUT_CMAKE_BUILD_TYPE ON)
 
+
+#add_compile_options(-O3)
 #debug options
 add_compile_options(-pedantic -fno-omit-frame-pointer -g -O0 -fno-inline)
 add_compile_options(-fsanitize=address)
@@ -52,6 +54,7 @@ target_link_libraries(sigProc PRIVATE
         gtest_main
         QtNodes::QtNodes
 )
+
 
 
 

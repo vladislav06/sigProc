@@ -3,11 +3,11 @@
 //
 #pragma once
 
-#include "src/nodes/dataTypes/arrayDataType.h"
+#include "src/nodes/dataTypes/arrayData.h"
 #include "src/nodes/baseNode.h"
 
 class FftNode
-        : public BaseNode<std::tuple<ArrayDataType<double> >, std::tuple<ArrayDataType<double>, ArrayDataType<double>, ArrayDataType<double>, ArrayDataType<double>>> {
+        : public BaseNode<std::tuple<ArrayData<double> >, std::tuple<ArrayData<double>, ArrayData<double>, ArrayData<double>, ArrayData<double>>> {
 public:
 
     QJsonObject onSave() const override;
@@ -20,12 +20,12 @@ public:
 
     QWidget *embeddedWidget() override;
 
-    std::tuple<std::shared_ptr<ArrayDataType<double>>,
-            std::shared_ptr<ArrayDataType<double>>,
-            std::shared_ptr<ArrayDataType<double>>,
-            std::shared_ptr<ArrayDataType<double>>>
-    compute(std::tuple<std::shared_ptr<ArrayDataType<double>>> params,
-            std::vector<std::shared_ptr<BaseDataType>> adParams) override;
+    std::tuple<std::shared_ptr<ArrayData<double>>,
+            std::shared_ptr<ArrayData<double>>,
+            std::shared_ptr<ArrayData<double>>,
+            std::shared_ptr<ArrayData<double>>>
+    compute(std::tuple<std::shared_ptr<ArrayData<double>>> params,
+            std::vector<std::shared_ptr<BaseData>> adParams) override;
 
 
 };

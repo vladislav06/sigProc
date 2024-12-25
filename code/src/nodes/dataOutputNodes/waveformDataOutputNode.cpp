@@ -57,8 +57,8 @@ bool WaveformDataOutputNode::onLoad(QJsonObject json) {
     return true;
 }
 
-std::tuple<> WaveformDataOutputNode::compute(std::tuple<std::shared_ptr<ArrayDataType<double>>> params,
-                                             std::vector<std::shared_ptr<BaseDataType>> adParams) {
+std::tuple<> WaveformDataOutputNode::compute(std::tuple<std::shared_ptr<ArrayData<double>>> params,
+                                             std::vector<std::shared_ptr<BaseData>> adParams) {
     auto array = std::get<0>(params);
     if (array != nullptr) {
         saveFileWFF(ui.filePath->text(), array);

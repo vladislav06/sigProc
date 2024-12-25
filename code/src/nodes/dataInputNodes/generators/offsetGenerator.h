@@ -9,9 +9,9 @@
 #include "baseGenerator.h"
 #include "QJsonObject"
 
-class OffsetGenerator : public BaseGenerator {
+class LineGenerator : public BaseGenerator {
 public:
-    OffsetGenerator() {
+    LineGenerator() {
         base = new QWidget;
         base->setLayout(new QBoxLayout(QBoxLayout::TopToBottom));
 
@@ -31,24 +31,24 @@ public:
                 p->layout()->addWidget(new QLabel(pair.first));
                 p->layout()->addWidget(box);
                 base->layout()->addWidget(p);
-                connect(box, &QDoubleSpinBox::editingFinished, this, &OffsetGenerator::onUpdate);
+                connect(box, &QDoubleSpinBox::editingFinished, this, &LineGenerator::onUpdate);
             }, pair.second);
         }
     }
 
     QString getName() override {
-        return "Offset generator";
+        return "Line generator";
     }
 
     QWidget *getWidgets() override {
         return base;
     }
 
-    std::shared_ptr<ArrayDataType<double>> generate() override {
+    std::shared_ptr<ArrayData<double>> generate() override {
         int len = length->value() * samplingRate->value();
         double off = offset->value();
 
-        auto array = std::make_shared<ArrayDataType<double>>();
+        auto array = std::make_shared<ArrayData<double>>();
         array->get().resize(len);
         for (int i = 0; i < len; i++) {
             array->get()[i] = off;

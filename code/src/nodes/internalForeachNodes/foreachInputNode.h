@@ -37,6 +37,6 @@ public:
 private:
     std::vector<QtNodes::NodeDataType> outputTypes;
 
-    std::vector<std::shared_ptr<BaseDataType>> outputData;
+    std::vector<std::shared_ptr<BaseData>> outputData;
 };
 

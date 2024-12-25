@@ -51,7 +51,7 @@ bool DynamicDataFlowGraphModel::connectionPossible(const QtNodes::ConnectionId c
     auto typeOut = getDataType(QtNodes::PortType::Out);
     auto typeIn = getDataType(QtNodes::PortType::In);
 
-    bool contains = NodeDataTypeTypeHelpers::inherits(typeOut, typeIn);
+    bool contains = NodeDataTypeHelpers::inherits(typeOut, typeIn);
     if (contains
         && portVacant(QtNodes::PortType::Out) && portVacant(QtNodes::PortType::In)) {
         if (willHaveCycle(connectionId)) {
@@ -124,7 +124,7 @@ bool DynamicDataFlowGraphModel::willHaveCycle(const QtNodes::ConnectionId connec
         }
     }
 
-    // BFS traversal
+    // DFS traversal
     while (!q.empty()) {
         unsigned int u = q.front();
         q.pop();
@@ -182,3 +182,4 @@ void DynamicDataFlowGraphModel::trigger() {
 void DynamicDataFlowGraphModel::onViewClose() {
     emit viewClosed();
 }
+

@@ -31,9 +31,9 @@ QWidget *InputFolderNode::embeddedWidget() {
     return base;
 }
 
-std::tuple<std::shared_ptr<FolderDataType>>
-InputFolderNode::compute(std::tuple<> params, std::vector<std::shared_ptr<BaseDataType>> adParams) {
-    return {std::make_shared<FolderDataType>(path->text())};
+std::tuple<std::shared_ptr<FolderData>>
+InputFolderNode::compute(std::tuple<> params, std::vector<std::shared_ptr<BaseData>> adParams) {
+    return {std::make_shared<FolderData>(path->text())};
 }
 
 QJsonObject InputFolderNode::onSave() const {

@@ -51,9 +51,9 @@ void SetFieldNode::editingFinished() {
     updated();
 }
 
-std::tuple<std::shared_ptr<ObjectDataType>>
-SetFieldNode::compute(std::tuple<std::shared_ptr<ObjectDataType>> params,
-                      std::vector<std::shared_ptr<BaseDataType>> adParams) {
+std::tuple<std::shared_ptr<ObjectData>>
+SetFieldNode::compute(std::tuple<std::shared_ptr<ObjectData>> params,
+                      std::vector<std::shared_ptr<BaseData>> adParams) {
     auto object = std::get<0>(params);
     if (object == nullptr) {
         return nullptr;

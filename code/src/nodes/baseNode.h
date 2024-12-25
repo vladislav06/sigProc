@@ -4,11 +4,11 @@
 
 #pragma once
 
-#include "src/utils/concepts.h"
+#include "src/nodes/dataTypes/concepts.h"
 
 #include <QtNodes/internal/NodeDelegateModel.hpp>
 #include "iostream"
-#include "src/nodes/dataTypes/arrayDataType.h"
+#include "src/nodes/dataTypes/arrayData.h"
 #include "src/nodes/nodePort.h"
 #include "src/threadPool/threadPool.h"
 
@@ -50,6 +50,7 @@ public slots:
     virtual void onInputConnectionCreation(QtNodes::ConnectionId connection, QtNodes::NodeDataType type) {};
 
 public:
+
     /**
      * This method is called in ui thread after compute method has returned
      * update ui elements in this method
@@ -64,24 +65,18 @@ public:
  * @tparam OutPorts Types of output ports
  * @tparam AdInPort Type of additional input ports
  */
-template<tuple InPorts, tuple OutPorts, baseDataType AdInPort = BaseDataType>
+template<tuple InPorts, tuple OutPorts, baseData AdInPort = BaseData>
 class BaseNode : public BaseNodeTypeLessWrapper {
 public:
     BaseNode() = default;
 
     ~BaseNode() override {
-        std::cout << "~BaseNode" << std::endl;
-
         //wait until job is done
         computeThreadSemaphore.acquire();
         computeThreadSemaphore.release();
         auto jobs = ThreadPool::get().getJobs(this);
         for (auto &job: jobs) {
-            if(job->inProgress==true){
-                std::cout << "waiting" << std::endl;
-            }
             while (job->inProgress) {
-
             }
             ThreadPool::get().deleteJob(job);
         }
@@ -91,7 +86,7 @@ private:
     //templates
 
     /**
-     * Will convert vector of std::shared_ptr<BaseNodePort> in to tuple of down casted BaseDataType according to tuple ports
+     * Will convert vector of std::shared_ptr<BaseNodePort> in to tuple of down casted BaseData according to tuple ports
      */
     template<tuple ports, typename T, std::size_t... Indices>
     auto vectorToTupleHelper(const std::vector<T> &v, std::index_sequence<Indices...>) {
@@ -100,7 +95,7 @@ private:
     }
 
     /**
-     * Will convert vector of std::shared_ptr<BaseNodePort> in to tuple of down casted BaseDataType according to tuple ports
+     * Will convert vector of std::shared_ptr<BaseNodePort> in to tuple of down casted BaseData according to tuple ports
      */
     template<tuple ports, std::size_t N, typename T>
     auto vectorToTuple(const std::vector<T> &v) {
@@ -110,6 +105,7 @@ private:
 
     template<typename Tuple>
     struct WrappedTupleElements;
+
     /**
      * Will wrap each tuple element in std::shared_ptr
      */
@@ -283,7 +279,6 @@ public:
                         Q_EMIT dataUpdated(i);
                     }
                 }
-                //TODO add headless flag
                 Q_EMIT callAfterCompute();
                 uiThreadSemaphore.release();
                 computeThreadSemaphore.release();

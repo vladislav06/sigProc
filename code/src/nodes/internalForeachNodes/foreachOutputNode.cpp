@@ -44,11 +44,12 @@ void ForeachOutputNode::setInData(std::shared_ptr<QtNodes::NodeData> nodeData, c
     if (nodeData == nullptr) {
         return;
     }
-    auto data = std::dynamic_pointer_cast<BaseDataType>(nodeData);
+    auto data = std::dynamic_pointer_cast<BaseData>(nodeData);
     assert(data != nullptr);
     inputData.at(portIndex) = data;
     //notify graphModel
-    dataUpdated(portIndex);
+    emit dataUpdated(portIndex);
+
 }
 
 std::shared_ptr<QtNodes::NodeData> ForeachOutputNode::outData(const QtNodes::PortIndex port) {
@@ -89,7 +90,7 @@ void ForeachOutputNode::onInputConnectionCreation(QtNodes::ConnectionId connecti
     //add new input connection with DataBaseType at the end
     int newPortIndex = inputType.size();
     portsAboutToBeInserted(QtNodes::PortType::In, newPortIndex, newPortIndex);
-    inputType.push_back(BaseDataType::DataType::getNodeDataType());
+    inputType.push_back(BaseData::DataType::getNodeDataType());
     portsInserted();
 
     dirtyInputConnections = false;

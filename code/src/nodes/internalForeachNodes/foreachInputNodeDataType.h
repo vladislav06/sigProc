@@ -7,7 +7,7 @@
 
 class ForeachInputNodeDataType : public QtNodes::NodeData {
 public:
-    ForeachInputNodeDataType(std::vector<QtNodes::NodeDataType> type, std::vector<std::shared_ptr<BaseDataType>> data)
+    ForeachInputNodeDataType(std::vector<QtNodes::NodeDataType> type, std::vector<std::shared_ptr<BaseData>> data)
             : types(std::move(type)), data(std::move(data)) {};
 
     ~ForeachInputNodeDataType() override = default;
@@ -18,5 +18,5 @@ public:
 
     std::vector<QtNodes::NodeDataType> types;
 
-    std::vector<std::shared_ptr<BaseDataType>> data;
+    std::vector<std::shared_ptr<BaseData>> data;
 };

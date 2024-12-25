@@ -32,9 +32,9 @@ QWidget *InputFileNode::embeddedWidget() {
     return base;
 }
 
-std::tuple<std::shared_ptr<FileDataType>>
-InputFileNode::compute(std::tuple<> params, std::vector<std::shared_ptr<BaseDataType>> adParams) {
-    return {std::make_shared<FileDataType>(path->text())};
+std::tuple<std::shared_ptr<FileData>>
+InputFileNode::compute(std::tuple<> params, std::vector<std::shared_ptr<BaseData>> adParams) {
+    return {std::make_shared<FileData>(path->text())};
 }
 
 QJsonObject InputFileNode::onSave() const {

@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "src/utils/concepts.h"
+#include "src/nodes/dataTypes/concepts.h"
 
 
 /**
@@ -20,12 +20,12 @@ struct BaseNodePort {
  * Adds shared_ptr<T> to BaseNodePort
  * @tparam T
  */
-template<baseDataType T>
+template<baseData T>
 struct NodePort : public BaseNodePort {
     std::shared_ptr<T> data;
 
     ~NodePort() override;
 };
 
-template<baseDataType T>
+template<baseData T>
 NodePort<T>::~NodePort() = default;

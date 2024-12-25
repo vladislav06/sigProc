@@ -4,19 +4,19 @@
 
 #pragma once
 
-#include "baseDataType.h"
-#include "nodeDataTypeType.h"
+#include "baseData.h"
+#include "nodeDataType.h"
 
-class ObjectDataType : public BaseDataType {
+class ObjectData : public BaseData {
 public:
-    using DataType = NodeDataTypeType<"Object", "object">;
+    using DataType = NodeDataType<"Object", "object">;
     DataType nodeType;
 
     QtNodes::NodeDataType type() const override {
         return nodeType.getNodeDataType();
     }
 
-    ~ObjectDataType() override = default;
+    ~ObjectData() override = default;
 
     QString toString() override {
 
@@ -37,5 +37,5 @@ public:
         return json.toJson(QJsonDocument::Indented);
     }
 
-    std::map<QString, std::shared_ptr<BaseDataType>> fields;
+    std::map<QString, std::shared_ptr<BaseData>> fields;
 };
