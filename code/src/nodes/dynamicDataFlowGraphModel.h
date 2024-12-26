@@ -20,6 +20,7 @@ public:
 
     bool willHaveCycle(QtNodes::ConnectionId connectionId) const;
 
+    bool deleteNode(const QtNodes::NodeId nodeId) override;
 
 public slots:
 

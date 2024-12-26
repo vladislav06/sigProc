@@ -92,11 +92,17 @@ void MainWindow::onLoad() {
     //delete all nodes in graph before loading, or else graph will not be loaded correctly
     auto ids = dataFlowGraphModel->allNodeIds();
     for (auto node: ids) {
-        dataFlowGraphModel->deleteNode(node);
-    }
-    assert(dataFlowGraphModel->allNodeIds().size() == 0);
+        QTimer::singleShot(10, [node , this] {
+            dataFlowGraphModel->deleteNode(node);
+        });
 
-    QTimer::singleShot(0, [doc, this] {
+        QTime dieTime= QTime::currentTime().addMSecs(10);
+        while (QTime::currentTime() < dieTime)
+            QCoreApplication::processEvents(QEventLoop::AllEvents, 10);
+    }
+//    assert(dataFlowGraphModel->allNodeIds().size() == 0);
+
+    QTimer::singleShot(10, [doc, this] {
         dataFlowGraphModel->load(doc.object());
     });
 
