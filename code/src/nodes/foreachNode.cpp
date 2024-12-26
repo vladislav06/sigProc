@@ -307,7 +307,6 @@ void ForeachNode::updateExternalOutputPorts() {
     auto outputNode = graphModel->delegateModel<ForeachOutputNode>(outputNodeId);
     auto data = std::dynamic_pointer_cast<ForeachInputNodeData>(outputNode->outData(QtNodes::InvalidPortIndex));
     assert(data != nullptr);
-    data->types;
     //wrap each type with array
     for (auto &type: data->types) {
         type = BaseArrayData::wrapWithArray(type);

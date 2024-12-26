@@ -6,6 +6,7 @@
 #include "baseData.h"
 #include "fstream"
 #include "QFile"
+
 class FileData : public BaseData {
 public:
     using DataType = NodeDataType<"File", "file">;
@@ -32,8 +33,7 @@ public:
     }
 
     bool exist() {
-        QFile fi(filePath);
-        return fi.exists();
+        return QFile::exists(filePath);
     }
 
     QString getFileContentsAsString() {
@@ -61,7 +61,7 @@ public:
     }
 
     /**
-     * Opens ifstream, return true if successful, false otherwise
+     * Opens ifstream, returns true if successful, false otherwise
      * @param ifs stream to be opened
      * @return true if successful, false otherwise
      */
@@ -74,6 +74,20 @@ public:
         }
         return false;
     }
+
+    /**
+     * Creates file and opens ofstream, returns true if successful, false otherwise
+     * @param ofs stream to be opened
+     * @return true if successful, false otherwise
+     */
+    bool createOutputStream(std::ofstream &ofs) {
+        ofs.open(filePath.toStdString());
+        if (ofs.is_open()) {
+            return true;
+        }
+        return false;
+    }
+
 
 private:
     QString filePath;

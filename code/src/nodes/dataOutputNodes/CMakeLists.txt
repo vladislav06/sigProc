@@ -1,5 +1,7 @@
 include_directories(./)
 
+add_subdirectory(dataEncoders)
+
 target_sources(sigProc PRIVATE
-        waveformDataOutputNode.cpp
+        fileEncoderNode.cpp
 )

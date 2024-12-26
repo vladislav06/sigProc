@@ -27,7 +27,8 @@ bool GeneratorNode::onLoad(QJsonObject json) {
     std::size_t oper = operation.toInteger();
     //find operation with same hash
     for (int i = 0; i < generators.size(); i++) {
-        auto oph = typeid(*generators[i]).hash_code();
+        auto obj = generators[i];
+        auto oph = typeid(*obj).hash_code();
         if (oper == oph) {
             selectedGenerator = generators[i];
             auto jsonData = json["data"].toObject();
@@ -66,9 +67,12 @@ QWidget *GeneratorNode::embeddedWidget() {
             comboBox->addItem(generators[i]->getName(), i);
         }
         connect(comboBox, &QComboBox::activated, this, &GeneratorNode::onSelect);
+
         base->setLayout(new QBoxLayout(QBoxLayout::TopToBottom));
         base->layout()->addWidget(comboBox);
         base->layout()->addWidget(holder);
+        base->layout()->setSizeConstraint(QLayout::SetMaximumSize);
+//        holder->layout()->setSizeConstraint(QLayout::SetMaximumSize);
 
         holder->layout()->addWidget(selectedGenerator->getWidgets());
         selectedGenerator->onLoad({});
@@ -88,13 +92,15 @@ void GeneratorNode::onSelect(int index) {
         auto w = holder->layout()->takeAt(i)->widget();
         w->hide();
     }
-    holder->layout()->invalidate();
-
 
     holder->layout()->addWidget(selectedGenerator->getWidgets());
     selectedGenerator->getWidgets()->show();
+
+    holder->layout()->invalidate();
+    base->layout()->invalidate();
     connect(selectedGenerator, &BaseGenerator::updated, this, &GeneratorNode::onUpdate);
     updated();
+    emit embeddedWidgetSizeUpdated();
 }
 
 void GeneratorNode::onUpdate() {

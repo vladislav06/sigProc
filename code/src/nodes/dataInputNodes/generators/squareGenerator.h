@@ -53,7 +53,6 @@ public:
     }
 
     QWidget *getWidgets() override {
-
         return base;
     }
 

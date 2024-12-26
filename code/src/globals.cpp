@@ -3,7 +3,6 @@
 //
 #include "globals.h"
 
-#include "src/nodes/dataOutputNodes/waveformDataOutputNode.h"
 #include "src/nodes/objectNodes/setFieldNode.h"
 #include "src/nodes/mathNodes/mathNode.h"
 #include "src/nodes/previewNodes/previewNode.h"
@@ -15,19 +14,19 @@
 #include "src/nodes/dataInputNodes/inputFileNode.h"
 #include "src/nodes/fileNodes/getFileNode.h"
 #include "src/nodes/foreachNode.h"
-#include "src/nodes/dataInputNodes/waveformDataInputNode.h"
+#include "src/nodes/dataInputNodes/fileDecoderNode.h"
 #include "src/nodes/dataInputNodes/objectCreateNode.h"
+#include "src/nodes/dataOutputNodes/fileEncoderNode.h"
 
 void registerNodes(std::shared_ptr<QtNodes::NodeDelegateModelRegistry> nodeRegistry) {
     nodeRegistry->registerModel<InputFolderNode>("Input");
     nodeRegistry->registerModel<InputFileNode>("Input");
     nodeRegistry->registerModel<GetFileNode>("Input");
 
-    nodeRegistry->registerModel<WaveformDataInputNode>("Input");
+    nodeRegistry->registerModel<FileDecoderNode>("Input");
 
     nodeRegistry->registerModel<GeneratorNode>("Input");
 
-    nodeRegistry->registerModel<WaveformDataOutputNode>("Output");
 
     nodeRegistry->registerModel<MathNode<double >>("Math");
     nodeRegistry->registerModel<FftNode>("Math");
@@ -38,7 +37,10 @@ void registerNodes(std::shared_ptr<QtNodes::NodeDelegateModelRegistry> nodeRegis
 
     nodeRegistry->registerModel<PreviewNode>("Output");
     nodeRegistry->registerModel<GraphPreviewNode<double >>("Output");
+    nodeRegistry->registerModel<FileEncoderNode>("Output");
+
 
     nodeRegistry->registerModel<ForeachNode>();
+
 
 }
