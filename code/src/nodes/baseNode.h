@@ -36,6 +36,13 @@ public:
 
     virtual QFuture<void> prepareToDelete() {
         willBeDeleted = true;
+        //handle case when no job was created
+        if(runningJob.isCanceled()){
+            uiThreadSemaphore.acquire();
+            QPromise<void> p;
+            p.finish();
+            return p.future();
+        }
         return runningJob.then([this]() { uiThreadSemaphore.acquire(); });
     }
 
