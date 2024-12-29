@@ -87,7 +87,6 @@ template<tuple InPorts, tuple OutPorts, baseData AdInPort = BaseData>
 class BaseNode : public BaseNodeTypeLessWrapper {
 public:
     BaseNode() {
-        customCaptions = false;
     };
 
     /**
@@ -95,11 +94,7 @@ public:
      * @param inputCaptions
      * @param outputCaptions
      */
-    BaseNode(std::array<QString, std::tuple_size_v<InPorts>> inputCaptions,
-             std::array<QString, std::tuple_size_v<OutPorts>> outputCaptions) : inputCaptions(inputCaptions),
-                                                                                outputCaptions(outputCaptions) {
-        customCaptions = true;
-    }
+
 
     ~BaseNode() override {
     }
@@ -163,7 +158,6 @@ private:
 
     int additionalInPorts = 0;
 
-    bool customCaptions = false;
     std::array<QString, std::tuple_size_v<InPorts>> inputCaptions;
     std::array<QString, std::tuple_size_v<OutPorts>> outputCaptions;
 
@@ -285,11 +279,16 @@ public:
 
     QString
     portCaption(QtNodes::PortType portType, QtNodes::PortIndex portIndex) const override {
-
         switch (portType) {
             case QtNodes::PortType::In:
+                if (portIndex >= inputCaptions.size()) {
+                    return "";
+                }
                 return inputCaptions[portIndex];
             case QtNodes::PortType::Out:
+                if (portIndex >= outputCaptions.size()) {
+                    return "";
+                }
                 return outputCaptions[portIndex];
             case QtNodes::PortType::None:
                 return "";
@@ -464,6 +463,13 @@ public:
     //source node is node with no inputs
     bool isSource() override {
         return std::tuple_size_v<InPorts> == 0;
+    }
+
+
+    void setCaptions(std::array<QString, std::tuple_size_v<InPorts>> input,
+                     std::array<QString, std::tuple_size_v<OutPorts>> output) {
+        inputCaptions = input;
+        outputCaptions = output;
     }
 };
 

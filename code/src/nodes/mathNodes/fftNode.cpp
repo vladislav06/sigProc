@@ -23,26 +23,7 @@ QString FftNode::name() const {
 }
 
 QWidget *FftNode::embeddedWidget() {
-    if (base == nullptr) {
-        base = new QWidget;
-
-        textIn = new QLabel("Input");
-        textReal = new QLabel("Real");
-        textImag = new QLabel("Imaginary");
-        textAmplitude = new QLabel("Amplitudes");
-        textPhase = new QLabel("Phases");
-
-        base->setLayout(new QBoxLayout(QBoxLayout::TopToBottom));
-        auto temp = new QWidget;
-        temp->setLayout(new QBoxLayout(QBoxLayout::LeftToRight));
-        temp->layout()->addWidget(textIn);
-        temp->layout()->addWidget(textAmplitude);
-        base->layout()->addWidget(temp);
-        base->layout()->addWidget(textReal);
-        base->layout()->addWidget(textImag);
-
-    }
-    return base;
+    return nullptr;
 }
 
 std::tuple<std::shared_ptr<ArrayData<double>>, std::shared_ptr<ArrayData<double>>, std::shared_ptr<ArrayData<double>>, std::shared_ptr<ArrayData<double>>>
@@ -73,7 +54,7 @@ FftNode::compute(std::tuple<std::shared_ptr<ArrayData<double>>> params,
         assert(index < imag->get().size());
 
         amplitude->get()[index] = sqrt(array[i][0] * array[i][0] + array[i][1] * array[i][1]);
-        imag->get()[index] = atan2(array[i][1], array[i][0]);
+        phase->get()[index] = atan2(array[i][1], array[i][0]);
     }
 
     return {amplitude, phase, real, imag};

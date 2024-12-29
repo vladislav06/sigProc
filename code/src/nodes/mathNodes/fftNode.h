@@ -11,6 +11,9 @@ class FftNode
         : public BaseNode<std::tuple<ArrayData<double> >, std::tuple<ArrayData<double>, ArrayData<double>, ArrayData<double>, ArrayData<double>>> {
 public:
 
+    FftNode(){
+        setCaptions({""},{"amplitude", "phase", "real", "imaginary"});
+    }
     QJsonObject onSave() const override;
 
     bool onLoad(QJsonObject json) override;
@@ -27,15 +30,6 @@ public:
             std::shared_ptr<ArrayData<double>>>
     compute(std::tuple<std::shared_ptr<ArrayData<double>>> params,
             std::vector<std::shared_ptr<BaseData>> adParams) override;
-
-
-private:
-    QWidget *base = nullptr;
-    QLabel *textIn = nullptr;
-    QLabel *textReal = nullptr;
-    QLabel *textImag = nullptr;
-    QLabel *textAmplitude = nullptr;
-    QLabel *textPhase = nullptr;
 
 };
 

@@ -9,6 +9,10 @@ class FmModulationNode
         : public BaseNode<std::tuple<ArrayData<double>, ArrayData<double>>, std::tuple<ArrayData<double>>> {
 public:
 
+    FmModulationNode() {
+        setCaptions({"carrier", "modulator"}, {""});
+    }
+
     QJsonObject onSave() const override;
 
     bool onLoad(QJsonObject json) override;
