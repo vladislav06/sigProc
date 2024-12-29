@@ -65,8 +65,7 @@ void ForeachNode::setInData(std::shared_ptr<QtNodes::NodeData> nodeData, const Q
     for (int i = 0; i < array->size(); i++) {
         auto element = array->at(i);
 
-        counterStarted = 0;
-        counterFinished = 0;
+
 
         auto inputNode = graphModel->delegateModel<ForeachInputNode>(inputNodeId);
         auto outputNode = graphModel->delegateModel<ForeachOutputNode>(outputNodeId);
@@ -88,7 +87,8 @@ void ForeachNode::setInData(std::shared_ptr<QtNodes::NodeData> nodeData, const Q
             }
         }
         workFinished.acquire();
-
+        counterStarted = 0;
+        counterFinished = 0;
         inputNode->setInData(dt, QtNodes::InvalidPortIndex);
 
         //wait for answer
@@ -178,13 +178,11 @@ void ForeachNode::initDataFlowGraphModel() {
                         graphModel->delegateModel<QtNodes::NodeDelegateModel>(nodeId),
                         &QtNodes::NodeDelegateModel::computingStarted, this, [this]() {
                             counterStarted++;
-                            std::cout << "counterStarted++" << std::endl;
                         }, Qt::DirectConnection);
                 connect(
                         graphModel->delegateModel<QtNodes::NodeDelegateModel>(nodeId),
                         &QtNodes::NodeDelegateModel::computingFinished, this, [this]() {
-                            counterFinished++;
-                            std::cout << "counterFinished++" << std::endl;
+                                counterFinished++;
                             if (counterStarted == counterFinished) {
                                 workFinished.release();
                             }
@@ -302,6 +300,8 @@ QJsonObject ForeachNode::save() const {
 
 void ForeachNode::load(const QJsonObject &json) {
     graphModel->load(json["graph"].toObject());
+    using namespace std::chrono_literals;
+    std::this_thread::sleep_for(50ms);
     updateExternalOutputPorts();
 }
 

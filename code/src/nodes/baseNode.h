@@ -26,16 +26,30 @@ public:
     ~BaseNodeTypeLessWrapper() override {
     };
 
-    virtual QFuture<void> prepareToDelete() {
+    /**
+     * Will prepare node for deletion, callback will be called when node is ready to be deleted
+     * @param callback
+     * @return
+     */
+    virtual void prepareToDelete(std::function<void(void)> callback) {
         willBeDeleted = true;
         //handle case when no job was created
         if (runningJob.isCanceled()) {
             uiThreadSemaphore.acquire();
             QPromise<void> p;
             p.finish();
-            return p.future();
+            callback();
         }
-        return runningJob.then([this]() { uiThreadSemaphore.acquire(); });
+        //acquire uiThreadSemaphore in another thread, because this action can block
+        runningJob.then([this, callback]() {
+            auto future = QtConcurrent::run([this]() {
+                uiThreadSemaphore.acquire();
+            });
+            future.then([callback, this]() {
+                assert(uiThreadSemaphore.try_acquire() == false);
+                callback();
+            });
+        });
     }
 
     virtual bool isSource() = 0;
@@ -301,11 +315,15 @@ public:
         if (willBeDeleted) {
             return;
         }
+        emit computingStarted();
         runningJob = QtConcurrent::run([this](QPromise<void> &promise) {
+            if (willBeDeleted) {
+                return;
+            }
             computeThreadSemaphore.acquire();
             uiThreadSemaphore.acquire();
 
-            emit computingStarted();
+
             //convert additional params into vector
             std::vector<std::shared_ptr<AdInPort>> adParams;
             for (int i = std::tuple_size_v<InPorts>; i < std::tuple_size_v<InPorts> + additionalInPorts; i++) {
@@ -327,8 +345,6 @@ public:
             computeThreadSemaphore.release();
             emit computingFinished();
         });
-
-
     }
 
 

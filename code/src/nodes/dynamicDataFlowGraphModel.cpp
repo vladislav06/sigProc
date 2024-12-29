@@ -186,7 +186,10 @@ void DynamicDataFlowGraphModel::onViewClose() {
 bool DynamicDataFlowGraphModel::deleteNode(const QtNodes::NodeId nodeId) {
     auto node = delegateModel<BaseNodeTypeLessWrapper>(nodeId);
 
-    node->prepareToDelete().then([this, nodeId]() { return DataFlowGraphModel::deleteNode(nodeId); });
+    node->prepareToDelete([this, nodeId]() {
+            DataFlowGraphModel::deleteNode(nodeId);
+
+    });
     return true;
 }
 

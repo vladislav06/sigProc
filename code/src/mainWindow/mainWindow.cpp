@@ -182,3 +182,4 @@ void MainWindow::changeView(QtNodes::GraphicsView *graphView, DynamicDataFlowGra
     });
     nodeWidget->layout()->addWidget(graphView);
 }
+

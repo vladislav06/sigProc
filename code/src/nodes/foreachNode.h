@@ -104,11 +104,12 @@ public:
 
     }
 
-    QFuture<void> prepareToDelete() override{
+    void prepareToDelete(std::function<void(void)> callback) override {
         QPromise<void> p;
         p.finish();
-        return p.future();
+        callback();
     }
+
     QString caption() const override;
 
     QString name() const override;
