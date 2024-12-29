@@ -107,5 +107,4 @@ private:
     QWidget *base = nullptr;
     QLineEdit *delimiter = nullptr;
     QLineEdit *field = nullptr;
-
 };

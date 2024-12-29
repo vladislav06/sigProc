@@ -22,7 +22,7 @@ public:
 
         std::ofstream fout;
 
-        if (!file->createOutputStream(fout)) {
+        if (!file->outputStream(fout)) {
             fout.close();
             return;
         }

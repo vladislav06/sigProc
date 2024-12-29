@@ -10,7 +10,7 @@
 #include <QtNodes/GraphicsView>
 #include <QtNodes/NodeDelegateModelRegistry>
 #include <QPushButton>
-
+#include "src/nodes/customNodePainter.h"
 class MainWindow : public QMainWindow, private Ui::mainWindow {
 Q_OBJECT
 

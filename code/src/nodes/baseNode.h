@@ -11,7 +11,6 @@
 #include "src/nodes/dataTypes/arrayData.h"
 #include "src/nodes/nodePort.h"
 #include "semaphore"
-//#include "src/threadPool/threadPool.h"
 #include "QtConcurrent/QtConcurrent"
 #include "QApplication"
 
@@ -25,19 +24,12 @@ public:
     BaseNodeTypeLessWrapper();
 
     ~BaseNodeTypeLessWrapper() override {
-//        QEventLoop wait;
-//        QFutureWatcher<void> fw;
-//        fw.setFuture(runningJob);
-//        QObject::connect(&fw, &QFutureWatcher<void>::finished, &wait, &QEventLoop::quit);
-//        wait.exec();
-//        QObject::disconnect(&fw, &QFutureWatcher<void>::finished, &wait, &QEventLoop::quit);
-//        fw.waitForFinished();
     };
 
     virtual QFuture<void> prepareToDelete() {
         willBeDeleted = true;
         //handle case when no job was created
-        if(runningJob.isCanceled()){
+        if (runningJob.isCanceled()) {
             uiThreadSemaphore.acquire();
             QPromise<void> p;
             p.finish();
@@ -94,18 +86,22 @@ protected:
 template<tuple InPorts, tuple OutPorts, baseData AdInPort = BaseData>
 class BaseNode : public BaseNodeTypeLessWrapper {
 public:
-    BaseNode() = default;
+    BaseNode() {
+        customCaptions = false;
+    };
+
+    /**
+     * Constructor that enables input and output captions
+     * @param inputCaptions
+     * @param outputCaptions
+     */
+    BaseNode(std::array<QString, std::tuple_size_v<InPorts>> inputCaptions,
+             std::array<QString, std::tuple_size_v<OutPorts>> outputCaptions) : inputCaptions(inputCaptions),
+                                                                                outputCaptions(outputCaptions) {
+        customCaptions = true;
+    }
 
     ~BaseNode() override {
-        //wait until job is done
-//        computeThreadSemaphore.acquire();
-//        computeThreadSemaphore.release();
-//        auto jobs = ThreadPool::get().getJobs(this);
-//        for (auto &job: jobs) {
-//            while (job->inProgress) {
-//            }
-//            ThreadPool::get().deleteJob(job);
-//        }
     }
 
 private:
@@ -167,6 +163,10 @@ private:
 
     int additionalInPorts = 0;
 
+    bool customCaptions = false;
+    std::array<QString, std::tuple_size_v<InPorts>> inputCaptions;
+    std::array<QString, std::tuple_size_v<OutPorts>> outputCaptions;
+
     /**
      * Ignore connection changes when node edits its own connections
      */
@@ -174,9 +174,6 @@ private:
 
     // guards compute thread until job is done
     std::binary_semaphore computeThreadSemaphore{1};
-
-
-    bool parallelization = true;
 
     //more templates
 
@@ -281,6 +278,25 @@ public:
         setInNodePortData<InPorts>(inNodePorts, nodeData, portIndex);
         callCompute();
     }
+
+    bool portCaptionVisible(QtNodes::PortType type, QtNodes::PortIndex index) const override {
+        return false;
+    }
+
+    QString
+    portCaption(QtNodes::PortType portType, QtNodes::PortIndex portIndex) const override {
+
+        switch (portType) {
+            case QtNodes::PortType::In:
+                return inputCaptions[portIndex];
+            case QtNodes::PortType::Out:
+                return outputCaptions[portIndex];
+            case QtNodes::PortType::None:
+                return "";
+        }
+        return "";
+    }
+
 
     void callCompute() {
         if (willBeDeleted) {

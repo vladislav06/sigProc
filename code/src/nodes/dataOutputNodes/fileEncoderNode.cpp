@@ -67,7 +67,7 @@ std::tuple<> FileEncoderNode::compute(std::tuple<std::shared_ptr<ArrayData<doubl
         auto file = std::make_shared<FileData>(path->text());
         //check if file can be writen to
         std::ofstream fout;
-        if (!file->createOutputStream(fout)) {
+        if (!file->outputStream(fout)) {
             return {};
         }
         fout.close();

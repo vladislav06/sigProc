@@ -80,7 +80,7 @@ public:
      * @param ofs stream to be opened
      * @return true if successful, false otherwise
      */
-    bool createOutputStream(std::ofstream &ofs) {
+    bool outputStream(std::ofstream &ofs) {
         ofs.open(filePath.toStdString());
         if (ofs.is_open()) {
             return true;

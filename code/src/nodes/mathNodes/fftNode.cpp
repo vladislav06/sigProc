@@ -2,6 +2,7 @@
 // Created by vm on 24.27.11.
 //
 
+#include <QBoxLayout>
 #include "fftNode.h"
 #include "src/math/fft/fft.h"
 
@@ -22,7 +23,26 @@ QString FftNode::name() const {
 }
 
 QWidget *FftNode::embeddedWidget() {
-    return nullptr;
+    if (base == nullptr) {
+        base = new QWidget;
+
+        textIn = new QLabel("Input");
+        textReal = new QLabel("Real");
+        textImag = new QLabel("Imaginary");
+        textAmplitude = new QLabel("Amplitudes");
+        textPhase = new QLabel("Phases");
+
+        base->setLayout(new QBoxLayout(QBoxLayout::TopToBottom));
+        auto temp = new QWidget;
+        temp->setLayout(new QBoxLayout(QBoxLayout::LeftToRight));
+        temp->layout()->addWidget(textIn);
+        temp->layout()->addWidget(textAmplitude);
+        base->layout()->addWidget(temp);
+        base->layout()->addWidget(textReal);
+        base->layout()->addWidget(textImag);
+
+    }
+    return base;
 }
 
 std::tuple<std::shared_ptr<ArrayData<double>>, std::shared_ptr<ArrayData<double>>, std::shared_ptr<ArrayData<double>>, std::shared_ptr<ArrayData<double>>>

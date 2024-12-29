@@ -21,7 +21,7 @@
 template<typename T>
 class MathNode : public BaseNode<std::tuple<TYPE, TYPE >, std::tuple<TYPE>> {
 public:
-    MathNode() {
+    MathNode(): BaseNode<std::tuple<ArrayData<T>, ArrayData<T>>, std::tuple<ArrayData<T>>>({"Input a","Input b"},{"result"}) {
         selectedOp = groups[0].ops[0];
     }
 
@@ -117,6 +117,8 @@ public:
             std::vector<std::shared_ptr<BaseData>> adParams) override {
         return {selectedOp->compute(std::get<0>(params), std::get<1>(params))};
     }
+
+
 
 private:
     QWidget *base = nullptr;

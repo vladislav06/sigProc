@@ -9,6 +9,7 @@
 #include "QTimer"
 #include "src/nodes/internalForeachNodes/foreachInputNodeDataType.h"
 #include "src/nodes/internalForeachNodes/foreachOutputNode.h"
+#include "customNodePainter.h"
 
 QString ForeachNode::caption() const {
     return "Foreach node";
@@ -165,6 +166,7 @@ void ForeachNode::initDataFlowGraphModel() {
     connect(graphModel, &DynamicDataFlowGraphModel::viewClosed, this, &ForeachNode::viewClosed);
 
     scene = new QtNodes::DataFlowGraphicsScene(*graphModel, this);
+    scene->setNodePainter(std::make_unique<CustomNodePainter>());
 
     // increase counter each time node starts and finishes computation
     connect(graphModel,

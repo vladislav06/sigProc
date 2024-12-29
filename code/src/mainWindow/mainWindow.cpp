@@ -3,6 +3,7 @@
 //
 
 #include <QFileDialog>
+#include <QMessageBox>
 #include "mainWindow.h"
 #include "fstream"
 #include "src/globals.h"
@@ -17,6 +18,7 @@ MainWindow::MainWindow(QWidget *parent) {
 
     dataFlowGraphModel = new DynamicDataFlowGraphModel(nodeRegistry);
     scene = new QtNodes::DataFlowGraphicsScene(*dataFlowGraphModel, this);
+    scene->setNodePainter(std::make_unique<CustomNodePainter>());
     view = new QtNodes::GraphicsView(scene);
     this->nodeWidget->layout()->addWidget(view);
 //    registerNodes<types>();
@@ -92,18 +94,24 @@ void MainWindow::onLoad() {
     //delete all nodes in graph before loading, or else graph will not be loaded correctly
     auto ids = dataFlowGraphModel->allNodeIds();
     for (auto node: ids) {
-        QTimer::singleShot(10, [node , this] {
+        QTimer::singleShot(10, [node, this] {
             dataFlowGraphModel->deleteNode(node);
         });
 
-        QTime dieTime= QTime::currentTime().addMSecs(10);
+        QTime dieTime = QTime::currentTime().addMSecs(10);
         while (QTime::currentTime() < dieTime)
             QCoreApplication::processEvents(QEventLoop::AllEvents, 10);
     }
 //    assert(dataFlowGraphModel->allNodeIds().size() == 0);
 
     QTimer::singleShot(10, [doc, this] {
-        dataFlowGraphModel->load(doc.object());
+        try {
+            dataFlowGraphModel->load(doc.object());
+        } catch (std::exception &e) {
+            QMessageBox messageBox;
+            messageBox.critical(0, "Error", "File is corrupted!");
+            messageBox.open();
+        }
     });
 
 

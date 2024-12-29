@@ -12,5 +12,6 @@ target_sources(sigProc PRIVATE
         baseNode.cpp
         foreachNode.cpp
         nodePort.cpp
+        customNodePainter.cpp
 )
 

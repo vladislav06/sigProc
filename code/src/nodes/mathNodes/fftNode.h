@@ -3,6 +3,7 @@
 //
 #pragma once
 
+#include <QLabel>
 #include "src/nodes/dataTypes/arrayData.h"
 #include "src/nodes/baseNode.h"
 
@@ -27,6 +28,14 @@ public:
     compute(std::tuple<std::shared_ptr<ArrayData<double>>> params,
             std::vector<std::shared_ptr<BaseData>> adParams) override;
 
+
+private:
+    QWidget *base = nullptr;
+    QLabel *textIn = nullptr;
+    QLabel *textReal = nullptr;
+    QLabel *textImag = nullptr;
+    QLabel *textAmplitude = nullptr;
+    QLabel *textPhase = nullptr;
 
 };
 
