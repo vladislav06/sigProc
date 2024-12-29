@@ -301,11 +301,12 @@ public:
         if (willBeDeleted) {
             return;
         }
+        emit computingStarted();
         runningJob = QtConcurrent::run([this](QPromise<void> &promise) {
             computeThreadSemaphore.acquire();
             uiThreadSemaphore.acquire();
 
-            emit computingStarted();
+
             //convert additional params into vector
             std::vector<std::shared_ptr<AdInPort>> adParams;
             for (int i = std::tuple_size_v<InPorts>; i < std::tuple_size_v<InPorts> + additionalInPorts; i++) {
@@ -323,6 +324,7 @@ public:
                     Q_EMIT dataUpdated(i);
                 }
             }
+
             Q_EMIT callAfterCompute();
             computeThreadSemaphore.release();
             emit computingFinished();

@@ -48,7 +48,7 @@ void ForeachOutputNode::setInData(std::shared_ptr<QtNodes::NodeData> nodeData, c
     assert(data != nullptr);
     inputData.at(portIndex) = data;
     //notify graphModel
-    emit dataUpdated(portIndex);
+//    emit dataUpdated(portIndex);
 
 }
 

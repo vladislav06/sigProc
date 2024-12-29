@@ -92,7 +92,11 @@ void ForeachNode::setInData(std::shared_ptr<QtNodes::NodeData> nodeData, const Q
         inputNode->setInData(dt, QtNodes::InvalidPortIndex);
 
         //wait for answer
-        workFinished.acquire();
+
+        while(!workFinished.try_acquire()){
+            qApp->processEvents(QEventLoop::AllEvents, 10);
+        }
+//        workFinished.acquire();
         workFinished.release();
         counterStarted = 0;
         counterFinished = 0;
@@ -178,14 +182,22 @@ void ForeachNode::initDataFlowGraphModel() {
                         graphModel->delegateModel<QtNodes::NodeDelegateModel>(nodeId),
                         &QtNodes::NodeDelegateModel::computingStarted, this, [this]() {
                             counterStarted++;
-                            std::cout << "counterStarted++" << std::endl;
+                            counterMutex.lock();
+                            counter++;
+                            counterMutex.unlock();
+                            std::cout << "counter ++: " << counter << std::endl;
+
+//                            std::cout << "counterStarted++" << std::endl;
                         }, Qt::DirectConnection);
                 connect(
                         graphModel->delegateModel<QtNodes::NodeDelegateModel>(nodeId),
                         &QtNodes::NodeDelegateModel::computingFinished, this, [this]() {
                             counterFinished++;
-                            std::cout << "counterFinished++" << std::endl;
-                            if (counterStarted == counterFinished) {
+                            counterMutex.lock();
+                            counter--;
+                            counterMutex.unlock();
+                            std::cout << "counter --: " << counter << std::endl;
+                            if (counter == 0) {
                                 workFinished.release();
                             }
                         }, Qt::DirectConnection);
@@ -316,4 +328,3 @@ void ForeachNode::updateExternalOutputPorts() {
     outputPortTypes = data->types;
     emit embeddedWidgetSizeUpdated();
 }
-
