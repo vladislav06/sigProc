@@ -36,6 +36,9 @@ QtNodes::NodeDataType ForeachNode::dataType(QtNodes::PortType portType, QtNodes:
         case QtNodes::PortType::In:
             return inputPortTypes.at(portIndex);
         case QtNodes::PortType::Out:
+            if (portIndex >= outputPortTypes.size()) {
+                return {};
+            }
             return outputPortTypes.at(portIndex);
         case QtNodes::PortType::None:
             return {};
@@ -44,18 +47,37 @@ QtNodes::NodeDataType ForeachNode::dataType(QtNodes::PortType portType, QtNodes:
 }
 
 void ForeachNode::setInData(std::shared_ptr<QtNodes::NodeData> nodeData, const QtNodes::PortIndex portIndex) {
-    if (nodeData == nullptr) {
+    if (!doComputing) {
         return;
     }
+
     auto d = std::dynamic_pointer_cast<BaseData>(nodeData);
-    assert(d != nullptr);
-    workSemaphore.acquire();
     inputPorts.at(portIndex) = d;
 
-    //start parallel processing
+
     if (inputPorts[0] == nullptr) {
+        workSemaphore.acquire();
+        emit computingStarted();
+
+        outputPorts.resize(outputPortTypes.size());
+        for (auto &outputPort: outputPorts) {
+            outputPort = nullptr;
+        }
+
+        //notify output connections
+        for (int i = 0; i < outputPortTypes.size(); i++) {
+            emit dataUpdated(i);
+        }
+
+        emit computingFinished();
+        workSemaphore.release();
+
         return;
     }
+
+    //start parallel processing
+    workSemaphore.acquire();
+    emit computingStarted();
     initDataFlowGraphModel();
 
     auto array = std::dynamic_pointer_cast<BaseDataArrayData>(inputPorts[0]);
@@ -64,7 +86,6 @@ void ForeachNode::setInData(std::shared_ptr<QtNodes::NodeData> nodeData, const Q
     resultsArray.clear();
     for (int i = 0; i < array->size(); i++) {
         auto element = array->at(i);
-
 
 
         auto inputNode = graphModel->delegateModel<ForeachInputNode>(inputNodeId);
@@ -78,6 +99,7 @@ void ForeachNode::setInData(std::shared_ptr<QtNodes::NodeData> nodeData, const Q
         data[0] = element;
         auto dt = std::make_shared<ForeachInputNodeData>(types, data);
 
+        graphModel->setComputing(true);
         //trigger all input nodes
         auto nodes = graphModel->allNodeIds();
         for (auto node: nodes) {
@@ -87,15 +109,19 @@ void ForeachNode::setInData(std::shared_ptr<QtNodes::NodeData> nodeData, const Q
             }
         }
         workFinished.acquire();
-        counterStarted = 0;
-        counterFinished = 0;
+        progressCounterMutex.lock();
+        progressCounter = 0;
+        progressCounterMutex.unlock();
         inputNode->setInData(dt, QtNodes::InvalidPortIndex);
 
         //wait for answer
         workFinished.acquire();
         workFinished.release();
-        counterStarted = 0;
-        counterFinished = 0;
+        progressCounterMutex.lock();
+        progressCounter = 0;
+        progressCounterMutex.unlock();
+        graphModel->setComputing(false);
+
 
         auto result = std::dynamic_pointer_cast<ForeachInputNodeData>(
                 outputNode->outData(QtNodes::InvalidPortIndex));
@@ -119,8 +145,8 @@ void ForeachNode::setInData(std::shared_ptr<QtNodes::NodeData> nodeData, const Q
     for (int i = 0; i < outputPortTypes.size(); i++) {
         emit dataUpdated(i);
     }
+    emit computingFinished();
     workSemaphore.release();
-
 }
 
 std::shared_ptr<QtNodes::NodeData> ForeachNode::outData(const QtNodes::PortIndex port) {
@@ -177,13 +203,20 @@ void ForeachNode::initDataFlowGraphModel() {
                 connect(
                         graphModel->delegateModel<QtNodes::NodeDelegateModel>(nodeId),
                         &QtNodes::NodeDelegateModel::computingStarted, this, [this]() {
-                            counterStarted++;
+                            progressCounterMutex.lock();
+                            progressCounter++;
+                            std::cout << "progressCounter ++:" << progressCounter << std::endl;
+
+                            progressCounterMutex.unlock();
                         }, Qt::DirectConnection);
                 connect(
                         graphModel->delegateModel<QtNodes::NodeDelegateModel>(nodeId),
                         &QtNodes::NodeDelegateModel::computingFinished, this, [this]() {
-                                counterFinished++;
-                            if (counterStarted == counterFinished) {
+                            progressCounterMutex.lock();
+                            progressCounter--;
+                            std::cout << "progressCounter --:" << progressCounter << std::endl;
+                            progressCounterMutex.unlock();
+                            if (progressCounter == 0) {
                                 workFinished.release();
                             }
                         }, Qt::DirectConnection);
@@ -224,6 +257,7 @@ void ForeachNode::updateInternalNodeType() {
     std::vector<std::shared_ptr<BaseData>> d;
     auto dt = std::make_shared<ForeachInputNodeData>(types, d);
     inputNode->setInData(dt, QtNodes::InvalidPortIndex);
+    inputNode->embeddedWidgetSizeUpdated();
 }
 
 
@@ -264,6 +298,19 @@ void ForeachNode::onInputConnectionCreation(QtNodes::ConnectionId connection, Qt
     }
     dirtyInputConnections = false;
 
+    // explicitly update output node port types
+    int portCount = graphModel->delegateModel<BaseNodeTypeLessWrapper>(outputNodeId)->nPorts(QtNodes::PortType::In);
+
+    for (int i = 0; i < portCount; i++) {
+        for (auto connection: graphModel->connections(outputNodeId, QtNodes::PortType::In, i)) {
+
+            auto source = graphModel->delegateModel<BaseNodeTypeLessWrapper>(connection.outNodeId);
+            auto type = source->dataType(QtNodes::PortType::Out, connection.outPortIndex);
+            type = BaseArrayData::wrapWithArray(type);
+            outputPortTypes[i] = type;
+        }
+    }
+    emit embeddedWidgetSizeUpdated();
 }
 
 void ForeachNode::inputConnectionDeleted(const QtNodes::ConnectionId &connection) {
@@ -273,11 +320,8 @@ void ForeachNode::inputConnectionDeleted(const QtNodes::ConnectionId &connection
     dirtyInputConnections = true;
     if (connection.inPortIndex == 0) {
         inputPortTypes[0] = ArrayData<std::shared_ptr<BaseData>>::DataType::getNodeDataType();
+        inputPorts[0] = nullptr;
     } else {
-//            if (connection.inPortIndex == 1) {
-//                //reset port type
-//                inputPortTypes[connection.inPortIndex] = BaseData::DataType::getNodeDataType();
-//            }
         //delete disconnected port
         int index = connection.inPortIndex;
         portsAboutToBeDeleted(QtNodes::PortType::In, index, index);
@@ -286,6 +330,20 @@ void ForeachNode::inputConnectionDeleted(const QtNodes::ConnectionId &connection
         portsDeleted();
     }
     dirtyInputConnections = false;
+
+    // explicitly update output node port types
+    int portCount = graphModel->delegateModel<BaseNodeTypeLessWrapper>(outputNodeId)->nPorts(QtNodes::PortType::In);
+
+    for (int i = 0; i < portCount; i++) {
+        for (auto connection: graphModel->connections(outputNodeId, QtNodes::PortType::In, i)) {
+
+            auto source = graphModel->delegateModel<BaseNodeTypeLessWrapper>(connection.outNodeId);
+            auto type = source->dataType(QtNodes::PortType::Out, connection.outPortIndex);
+            type = BaseArrayData::wrapWithArray(type);
+            outputPortTypes[i] = type;
+        }
+    }
+    emit embeddedWidgetSizeUpdated();
 }
 
 void ForeachNode::viewClosed() {
@@ -300,9 +358,14 @@ QJsonObject ForeachNode::save() const {
 
 void ForeachNode::load(const QJsonObject &json) {
     graphModel->load(json["graph"].toObject());
+
+    updateInternalNodeType();
+    updateExternalOutputPorts();
+
     using namespace std::chrono_literals;
     std::this_thread::sleep_for(50ms);
-    updateExternalOutputPorts();
+
+
 }
 
 void ForeachNode::updateExternalOutputPorts() {

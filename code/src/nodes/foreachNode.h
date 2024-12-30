@@ -37,8 +37,8 @@ private:
 //    std::unique_ptr<std::condition_variable> workFinished = std::make_unique<std::condition_variable>();
     std::binary_semaphore workFinished{1};
 
-    int counterStarted = 0;
-    int counterFinished = 0;
+    std::mutex progressCounterMutex;
+    int progressCounter = 0;
 
 
     std::binary_semaphore workSemaphore{1};

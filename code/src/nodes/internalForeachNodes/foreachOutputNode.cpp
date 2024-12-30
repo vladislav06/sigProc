@@ -47,6 +47,7 @@ void ForeachOutputNode::setInData(std::shared_ptr<QtNodes::NodeData> nodeData, c
     auto data = std::dynamic_pointer_cast<BaseData>(nodeData);
     assert(data != nullptr);
     inputData.at(portIndex) = data;
+    inputType.at(portIndex) = data->type();
     //notify graphModel
     emit dataUpdated(portIndex);
 
@@ -77,21 +78,31 @@ void ForeachOutputNode::onInputConnectionCreation(QtNodes::ConnectionId connecti
     }
     dirtyInputConnections = true;
 
+    if (connection.inPortIndex >= inputData.size()) {
+        inputData.resize(connection.inPortIndex + 1);
+    }
+
     //save type of additional data ports
     if (connection.inPortIndex >= inputType.size()) {
         inputType.resize(connection.inPortIndex + 1);
+
+        //add new input connection with DataBaseType at the end
+        int newPortIndex = inputType.size() + 1;
+        portsAboutToBeInserted(QtNodes::PortType::In, newPortIndex, newPortIndex);
+        inputType.push_back(BaseData::DataType::getNodeDataType());
+        portsInserted();
     }
-    if (connection.inPortIndex >= inputData.size()) {
-        inputData.resize(connection.inPortIndex + 1);
+
+    if (connection.inPortIndex == inputType.size() - 1) {
+        //add new input connection with DataBaseType at the end
+        int newPortIndex = inputType.size();
+        portsAboutToBeInserted(QtNodes::PortType::In, newPortIndex, newPortIndex);
+        inputType.push_back(BaseData::DataType::getNodeDataType());
+        portsInserted();
     }
     //save connected port type
     inputType[connection.inPortIndex] = type;
 
-    //add new input connection with DataBaseType at the end
-    int newPortIndex = inputType.size();
-    portsAboutToBeInserted(QtNodes::PortType::In, newPortIndex, newPortIndex);
-    inputType.push_back(BaseData::DataType::getNodeDataType());
-    portsInserted();
 
     dirtyInputConnections = false;
 }

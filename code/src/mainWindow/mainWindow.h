@@ -10,7 +10,9 @@
 #include <QtNodes/GraphicsView>
 #include <QtNodes/NodeDelegateModelRegistry>
 #include <QPushButton>
+#include <QProgressBar>
 #include "src/nodes/customNodePainter.h"
+
 class MainWindow : public QMainWindow, private Ui::mainWindow {
 Q_OBJECT
 
@@ -23,6 +25,7 @@ private:
     QString currentFile;
     bool dirty;
     QPushButton *backButton = nullptr;
+    QProgressBar *progressBar = nullptr;
 
 
 public:
@@ -32,12 +35,23 @@ public slots:
 
     void changeView(QtNodes::GraphicsView *graphView, DynamicDataFlowGraphModel *graphModel);
 
+    void calculate(bool checked);
+
+    void calculationEnded();
+
+signals:
+
+    void calculationEndedSignal();
+
 private:
     void onSave();
 
     void onLoad();
 
     void setDirty(bool dirty);
+
+    std::mutex progressCounterMutex;
+    int progressCounter = 0;
 
 };
 

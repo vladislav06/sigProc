@@ -33,23 +33,7 @@ public:
      */
     virtual void prepareToDelete(std::function<void(void)> callback) {
         willBeDeleted = true;
-        //handle case when no job was created
-        if (runningJob.isCanceled()) {
-            uiThreadSemaphore.acquire();
-            QPromise<void> p;
-            p.finish();
-            callback();
-        }
-        //acquire uiThreadSemaphore in another thread, because this action can block
-        runningJob.then([this, callback]() {
-            auto future = QtConcurrent::run([this]() {
-                uiThreadSemaphore.acquire();
-            });
-            future.then([callback, this]() {
-                assert(uiThreadSemaphore.try_acquire() == false);
-                callback();
-            });
-        });
+        callback();
     }
 
     virtual bool isSource() = 0;
@@ -76,6 +60,10 @@ public slots:
      */
     virtual void onInputConnectionCreation(QtNodes::ConnectionId connection, QtNodes::NodeDataType type) {};
 
+    void setComputeMode(bool compute) {
+        this->doComputing = compute;
+    }
+
 public:
 
     /**
@@ -88,6 +76,8 @@ protected:
     QFuture<void> runningJob;
 
     bool willBeDeleted = false;
+
+    bool doComputing = false;
 };
 
 
@@ -312,12 +302,13 @@ public:
 
 
     void callCompute() {
-        if (willBeDeleted) {
+        if (willBeDeleted || !doComputing) {
             return;
         }
         emit computingStarted();
         runningJob = QtConcurrent::run([this](QPromise<void> &promise) {
             if (willBeDeleted) {
+                emit computingFinished();
                 return;
             }
             computeThreadSemaphore.acquire();

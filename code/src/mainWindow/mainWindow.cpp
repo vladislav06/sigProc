@@ -9,6 +9,7 @@
 #include "src/globals.h"
 #include "QTimer"
 #include "QPushButton"
+#include "src/nodes/baseNode.h"
 
 MainWindow::MainWindow(QWidget *parent) {
     setupUi(this);
@@ -25,7 +26,7 @@ MainWindow::MainWindow(QWidget *parent) {
 
     connect(this->actionSave, &QAction::triggered, this, &MainWindow::onSave);
     connect(this->actionOpen, &QAction::triggered, this, &MainWindow::onLoad);
-    connect(this->actionReload, &QAction::triggered, dataFlowGraphModel, &DynamicDataFlowGraphModel::trigger);
+    connect(this->actionCalculate, &QAction::triggered, this, &MainWindow::calculate);
 
     connect(dataFlowGraphModel, &DynamicDataFlowGraphModel::nodePositionUpdated, this, [this]() {
         setDirty(true);
@@ -41,6 +42,8 @@ MainWindow::MainWindow(QWidget *parent) {
     });
 
     connect(dataFlowGraphModel, &DynamicDataFlowGraphModel::setView, this, &MainWindow::changeView);
+
+    connect(this, &MainWindow::calculationEndedSignal, this, &MainWindow::calculationEnded);
 
 }
 
@@ -165,7 +168,7 @@ void MainWindow::changeView(QtNodes::GraphicsView *graphView, DynamicDataFlowGra
     //create back button
     backButton = new QPushButton("< Back");
     nodeWidget->layout()->addWidget(backButton);
-    actionReload->setDisabled(true);
+    actionCalculate->setDisabled(true);
 
     connect(backButton, &QPushButton::clicked, this, [this, graphView, graphModel](bool) {
 
@@ -178,8 +181,91 @@ void MainWindow::changeView(QtNodes::GraphicsView *graphView, DynamicDataFlowGra
         nodeWidget->layout()->addWidget(view);
         view->show();
         backButton = nullptr;
-        actionReload->setDisabled(false);
+        actionCalculate->setDisabled(false);
     });
     nodeWidget->layout()->addWidget(graphView);
+}
+
+void MainWindow::calculate(bool checked) {
+
+    //empty graph edge case
+    if (dataFlowGraphModel->allNodeIds().empty()) {
+        return;
+    }
+    // disable view
+    view->setDisabled(true);
+
+    // tell all nodes to enable calculation mode
+    dataFlowGraphModel->setComputing(true);
+
+    progressBar = new QProgressBar;
+    progressBar->setMaximum(0);
+    progressBar->setMinimum(0);
+    progressBar->setValue(0);
+    nodeWidget->layout()->addWidget(progressBar);
+
+    //increase and decrease counter when node starts and ends computation
+    auto nodes = dataFlowGraphModel->allNodeIds();
+
+    for (auto nodeId: nodes) {
+
+        auto model = dataFlowGraphModel->delegateModel<BaseNodeTypeLessWrapper>(nodeId);
+
+        connect(
+                model,
+                &QtNodes::NodeDelegateModel::computingStarted, this, [this]() {
+                    std::lock_guard<std::mutex> l(progressCounterMutex);
+                    progressCounter++;
+                }, Qt::DirectConnection);
+        connect(
+                model,
+                &QtNodes::NodeDelegateModel::computingFinished, this, [this]() {
+                    std::lock_guard<std::mutex> l(progressCounterMutex);
+                    progressCounter--;
+
+                    if (progressCounter == 0) {
+                        emit calculationEndedSignal();
+                    }
+                }, Qt::DirectConnection);
+    }
+
+
+    //disable buttons
+    actionCalculate->setDisabled(true);
+    actionOpen->setDisabled(true);
+    actionSave->setDisabled(true);
+    actionSaveAs->setDisabled(true);
+    actionAbout->setDisabled(true);
+    actionCopy->setDisabled(true);
+    actionCut->setDisabled(true);
+    actionPaste->setDisabled(true);
+    actionNew->setDisabled(true);
+
+    // trigger nodeGraph
+    QtConcurrent::run([this](QPromise<void> &promise) {
+        dataFlowGraphModel->trigger();
+
+    });
+}
+
+void MainWindow::calculationEnded() {
+    // tell all nodes to disable calculation mode
+    dataFlowGraphModel->setComputing(false);
+
+    //enable buttons
+    actionCalculate->setDisabled(false);
+    actionOpen->setDisabled(false);
+    actionSave->setDisabled(false);
+    actionSaveAs->setDisabled(false);
+    actionAbout->setDisabled(false);
+    actionCopy->setDisabled(false);
+    actionCut->setDisabled(false);
+    actionPaste->setDisabled(false);
+    actionNew->setDisabled(false);
+    delete progressBar;
+    //enable view back
+    view->setDisabled(false);
+
+
 }
 

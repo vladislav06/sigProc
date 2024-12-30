@@ -30,9 +30,14 @@ public slots:
 
     void onViewClose();
 
+//    void setComputing(bool compute);
+
 signals:
 
     void setView(QtNodes::GraphicsView *graphView, DynamicDataFlowGraphModel *graphModel);
 
     void viewClosed();
+
+    void setComputing(bool compute);
+
 };

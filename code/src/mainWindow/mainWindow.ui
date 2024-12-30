@@ -79,7 +79,7 @@
    <addaction name="separator"/>
    <addaction name="actionCopy"/>
    <addaction name="actionPaste"/>
-   <addaction name="actionReload"/>
+   <addaction name="actionCalculate"/>
   </widget>
   <action name="actionAbout">
    <property name="icon">
@@ -155,12 +155,15 @@
     <string>SaveAs</string>
    </property>
   </action>
-  <action name="actionReload">
+  <action name="actionCalculate">
    <property name="icon">
-    <iconset theme="view-refresh"/>
+    <iconset theme="accessories-calculator"/>
    </property>
    <property name="text">
-    <string>Reload</string>
+    <string>Calculate</string>
+   </property>
+   <property name="toolTip">
+    <string>Calculate</string>
    </property>
   </action>
  </widget>
