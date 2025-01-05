@@ -330,6 +330,8 @@ public:
             for (int i = 0; i < outNodePorts.size(); i++) {
                 if (tempOutNodePorts[i] != outNodePorts[i]) {
                     Q_EMIT dataUpdated(i);
+                    using namespace std::chrono_literals;
+                    std::this_thread::sleep_for(1ms);
                 }
             }
             Q_EMIT callAfterCompute();

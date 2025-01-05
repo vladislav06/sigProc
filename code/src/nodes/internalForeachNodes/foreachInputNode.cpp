@@ -58,6 +58,8 @@ void ForeachInputNode::setInData(std::shared_ptr<QtNodes::NodeData> nodeData, co
         emit computingStarted();
         for (int i = 0; i < outputTypes.size(); i++) {
             emit dataUpdated(i);
+            using namespace std::chrono_literals;
+            std::this_thread::sleep_for(1ms);
         }
         emit computingFinished();
     }

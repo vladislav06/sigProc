@@ -28,6 +28,9 @@ MainWindow::MainWindow(QWidget *parent) {
     connect(this->actionOpen, &QAction::triggered, this, &MainWindow::onLoad);
     connect(this->actionCalculate, &QAction::triggered, this, &MainWindow::calculate);
 
+    connect(this->actionCopy, &QAction::triggered, view, &QtNodes::GraphicsView::onCopySelectedObjects);
+    connect(this->actionPaste, &QAction::triggered, view, &QtNodes::GraphicsView::onPasteObjects);
+
     connect(dataFlowGraphModel, &DynamicDataFlowGraphModel::nodePositionUpdated, this, [this]() {
         setDirty(true);
     });
@@ -44,6 +47,7 @@ MainWindow::MainWindow(QWidget *parent) {
     connect(dataFlowGraphModel, &DynamicDataFlowGraphModel::setView, this, &MainWindow::changeView);
 
     connect(this, &MainWindow::calculationEndedSignal, this, &MainWindow::calculationEnded);
+
 
 }
 

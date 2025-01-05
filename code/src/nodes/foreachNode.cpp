@@ -376,6 +376,32 @@ void ForeachNode::updateExternalOutputPorts() {
     for (auto &type: data->types) {
         type = BaseArrayData::wrapWithArray(type);
     }
+    //check if types are same as before, if not, remove all ports that differs
+    bool same = true;
+
+    int index = 0;
+    while (same) {
+        if (index >= outputPortTypes.size())
+            break;
+        if (index >= data->types.size())
+            break;
+        if (outputPortTypes[index].id != data->types[index].id) {
+            same = false;
+        }
+        index++;
+    }
+
+    if (!same) {
+        //remove changed port not after
+        if (index > 0) {
+            index--;
+        }
+        portsAboutToBeDeleted(QtNodes::PortType::Out, index, outputPortTypes.size());
+        portsDeleted();
+        portsAboutToBeInserted(QtNodes::PortType::Out, index, data->types.size());
+        portsInserted();
+    }
+
     outputPortTypes = data->types;
     emit embeddedWidgetSizeUpdated();
 }

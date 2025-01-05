@@ -1,6 +1,8 @@
 <RCC>
   <qresource prefix="/">
+    <file>icons/appico.ico</file>
     <file>icons/breeze-dark/index.theme</file>
+    <file>appico.ico</file>
     <file>DefaultStyle.json</file>
   </qresource>
 </RCC>

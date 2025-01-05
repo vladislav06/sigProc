@@ -9,9 +9,6 @@
 #include "QtNodes/internal/AbstractNodeGeometry.hpp"
 #include "QtNodes/internal/BasicGraphicsScene.hpp"
 #include "QtNodes/internal/NodeStyle.hpp"
-#include "QtNodes/internal/StyleCollection.hpp"
-#include "QtNodes/internal/ConnectionIdUtils.hpp"
-
 void CustomNodePainter::paint(QPainter *painter, QtNodes::NodeGraphicsObject &ngo) const {
     drawNodeRect(painter, ngo);
 
