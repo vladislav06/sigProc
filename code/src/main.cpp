@@ -15,8 +15,6 @@ int main(int argc, char *argv[]) {
 
     QApplication app(argc, argv);
     MainWindow mainWidget;
-    QApplication::setWindowIcon(QIcon(":/appico.ico"));
-    mainWidget.setWindowIcon(QIcon("./appico.ico"));
 
     mainWidget.show();
     QIcon::setThemeName("breeze-dark");

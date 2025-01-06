@@ -23,8 +23,9 @@ MainWindow::MainWindow(QWidget *parent) {
     view = new QtNodes::GraphicsView(scene);
     this->nodeWidget->layout()->addWidget(view);
 //    registerNodes<types>();
-
-    connect(this->actionSave, &QAction::triggered, this, &MainWindow::onSave);
+    connect(this->actionNew, &QAction::triggered, this, &MainWindow::newAlgorithm);
+    connect(this->actionSave, &QAction::triggered, this, &MainWindow::save);
+    connect(this->actionSaveAs, &QAction::triggered, this, &MainWindow::saveAs);
     connect(this->actionOpen, &QAction::triggered, this, &MainWindow::onLoad);
     connect(this->actionCalculate, &QAction::triggered, this, &MainWindow::calculate);
 
@@ -271,5 +272,27 @@ void MainWindow::calculationEnded() {
     view->setDisabled(false);
 
 
+}
+
+void MainWindow::save() {
+    onSave();
+}
+
+void MainWindow::newAlgorithm() {
+    auto ids = dataFlowGraphModel->allNodeIds();
+    for (auto node: ids) {
+        dataFlowGraphModel->deleteNode(node);
+    }
+    QTimer::singleShot(0, [this] {
+        currentFile = "";
+        setDirty(false);
+        setWindowTitle(WINDOW_TITLE);
+
+    });
+}
+
+void MainWindow::saveAs() {
+    currentFile = "";
+    onSave();
 }
 

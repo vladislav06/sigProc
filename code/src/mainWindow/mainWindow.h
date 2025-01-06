@@ -27,6 +27,8 @@ private:
     QPushButton *backButton = nullptr;
     QProgressBar *progressBar = nullptr;
 
+    const QString WINDOW_TITLE = "SigProc[*]";
+
 
 public:
     explicit MainWindow(QWidget *parent = nullptr);
@@ -38,6 +40,12 @@ public slots:
     void calculate(bool checked);
 
     void calculationEnded();
+
+    void newAlgorithm();
+
+    void save();
+
+    void saveAs();
 
 signals:
 

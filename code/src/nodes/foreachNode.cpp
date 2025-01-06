@@ -205,7 +205,7 @@ void ForeachNode::initDataFlowGraphModel() {
                         &QtNodes::NodeDelegateModel::computingStarted, this, [this]() {
                             progressCounterMutex.lock();
                             progressCounter++;
-                            std::cout << "progressCounter ++:" << progressCounter << std::endl;
+//                            std::cout << "progressCounter ++:" << progressCounter << std::endl;
 
                             progressCounterMutex.unlock();
                         }, Qt::DirectConnection);
@@ -214,7 +214,7 @@ void ForeachNode::initDataFlowGraphModel() {
                         &QtNodes::NodeDelegateModel::computingFinished, this, [this]() {
                             progressCounterMutex.lock();
                             progressCounter--;
-                            std::cout << "progressCounter --:" << progressCounter << std::endl;
+//                            std::cout << "progressCounter --:" << progressCounter << std::endl;
                             progressCounterMutex.unlock();
                             if (progressCounter == 0) {
                                 workFinished.release();
