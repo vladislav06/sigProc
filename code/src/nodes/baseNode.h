@@ -1,5 +1,5 @@
 //
-// Created by vm on 24.30.10.
+// Created by Vladislavs Agarkovs on 24.30.10.
 //
 
 #pragma once
@@ -36,20 +36,30 @@ public:
         callback();
     }
 
+    /**
+     * Must return true when node is source, ie. no inputs only outputs
+     * @return
+     */
     virtual bool isSource() = 0;
 
+    /**
+     * Calls node compute function
+     */
     virtual void recalculate() = 0;
 
-    // guards ui thread
+    /// Guards execution in ui thread
     std::binary_semaphore uiThreadSemaphore{1};
 
 signals:
+
 
     void callAfterCompute();
 
 public slots:
 
-
+    /**
+     * Must be called after node has ended its computation
+     */
     void afterComputeSlot() {
         afterCompute();
         uiThreadSemaphore.release();
@@ -73,10 +83,13 @@ public:
     virtual void afterCompute() {};
 
 protected:
+    /// Currently running job
     QFuture<void> runningJob;
 
+    /// Is true when node is being deleted
     bool willBeDeleted = false;
 
+    /// is true when node is allowed to compute anything
     bool doComputing = false;
 };
 
@@ -92,13 +105,6 @@ class BaseNode : public BaseNodeTypeLessWrapper {
 public:
     BaseNode() {
     };
-
-    /**
-     * Constructor that enables input and output captions
-     * @param inputCaptions
-     * @param outputCaptions
-     */
-
 
     ~BaseNode() override {
     }
@@ -135,6 +141,13 @@ private:
         using type = std::tuple<std::shared_ptr<Values>...>;
     };
 
+    /**
+     * Recursively generates ports array at index I with types from tup
+     * @tparam tup types with which to generate arrays
+     * @tparam I current index
+     * @param ports array to generate into
+     * @return
+     */
     template<tuple tup, std::size_t I = 0>
     static constexpr void generateNodePort(std::vector<std::shared_ptr<BaseNodePort>> &ports) {
         if constexpr (I < std::tuple_size_v<tup>) {
@@ -148,6 +161,11 @@ private:
         }
     }
 
+    /**
+     * Generates port arrays with specified types
+     * @tparam ports types with which to generate arrays
+     * @return
+     */
     template<tuple ports>
     constexpr std::vector<std::shared_ptr<BaseNodePort>> generateNodePorts() {
         std::vector<std::shared_ptr<BaseNodePort>> nodes;
@@ -155,12 +173,14 @@ private:
         return nodes;
     }
 
-    //input and output data vectors
+    //input and output data arrays
 
     std::vector<std::shared_ptr<BaseNodePort>> inNodePorts = generateNodePorts<InPorts>();
     std::vector<std::shared_ptr<BaseNodePort>> outNodePorts = generateNodePorts<OutPorts>();
 
     int additionalInPorts = 0;
+
+    //these arrays store captions for node ports
 
     std::array<QString, std::tuple_size_v<InPorts>> inputCaptions;
     std::array<QString, std::tuple_size_v<OutPorts>> outputCaptions;
@@ -170,17 +190,17 @@ private:
      */
     bool dirtyInputConnections = false;
 
-    // guards compute thread until job is done
+    /// guards compute thread until job is done
     std::binary_semaphore computeThreadSemaphore{1};
 
     //more templates
 
     /**
     * Downcasts data to type specified in tuple at index and assigns it to BaseNodePort in ports at index
-    * @tparam tup
+    * @tparam tup tuple with types
     * @tparam I
-    * @param ports
-    * @param data
+    * @param ports where to set data
+    * @param data from where to get data
     */
     template<tuple tup, std::size_t I = 0>
     void setInNodePortData(std::vector<std::shared_ptr<BaseNodePort>> &ports, std::shared_ptr<QtNodes::NodeData> data,
@@ -277,10 +297,6 @@ public:
         callCompute();
     }
 
-    bool portCaptionVisible(QtNodes::PortType type, QtNodes::PortIndex index) const override {
-        return false;
-    }
-
     QString
     portCaption(QtNodes::PortType portType, QtNodes::PortIndex portIndex) const override {
         switch (portType) {
@@ -300,7 +316,9 @@ public:
         return "";
     }
 
-
+    /**
+     * Performs calculation in separate thread
+     */
     void callCompute() {
         if (willBeDeleted || !doComputing) {
             return;
@@ -390,11 +408,6 @@ public:
             return;
         }
         onLoad(data.toObject());
-    }
-
-    //this is needed for nodes that do not have interactive widget and input
-    void outputConnectionCreated(const QtNodes::ConnectionId &) override {
-//        updated();
     }
 
     void inputConnectionCreated(const QtNodes::ConnectionId &connection) override {

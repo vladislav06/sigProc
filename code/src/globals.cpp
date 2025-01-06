@@ -1,5 +1,5 @@
 //
-// Created by vm on 24.7.12.
+// Created by Vladislavs Agarkovs on 24.7.12.
 //
 #include "globals.h"
 

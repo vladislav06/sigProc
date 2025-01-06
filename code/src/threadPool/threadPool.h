@@ -1,5 +1,5 @@
 //
-// Created by vm on 24.28.11.
+// Created by Vladislavs Agarkovs on 24.28.11.
 //
 #pragma once
 

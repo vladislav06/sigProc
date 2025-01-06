@@ -1,5 +1,5 @@
 //
-// Created by vm on 24.2.12.
+// Created by Vladislavs Agarkovs on 24.2.12.
 //
 #pragma once
 
@@ -36,6 +36,10 @@ public:
         return QFile::exists(filePath);
     }
 
+    /**
+     *
+     * @return file contents as string
+     */
     QString getFileContentsAsString() {
         QFile fi(filePath);
         if (!fi.exists()) {
@@ -48,6 +52,10 @@ public:
         return out;
     }
 
+    /**
+     *
+     * @return file contents as byte array
+     */
     QByteArray getFileContentsAsBytes() {
         QFile fi(filePath);
         if (!fi.exists()) {

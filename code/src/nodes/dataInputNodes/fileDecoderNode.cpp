@@ -1,5 +1,5 @@
 //
-// Created by vm on 24.30.10.
+// Created by Vladislavs Agarkovs on 24.30.10.
 //
 #include "fileDecoderNode.h"
 #include <QtWidgets>

@@ -1,5 +1,5 @@
 //
-// Created by vm on 24.4.12.
+// Created by Vladislavs Agarkovs on 24.4.12.
 //
 
 #include <QBoxLayout>
@@ -205,8 +205,6 @@ void ForeachNode::initDataFlowGraphModel() {
                         &QtNodes::NodeDelegateModel::computingStarted, this, [this]() {
                             progressCounterMutex.lock();
                             progressCounter++;
-//                            std::cout << "progressCounter ++:" << progressCounter << std::endl;
-
                             progressCounterMutex.unlock();
                         }, Qt::DirectConnection);
                 connect(
@@ -214,7 +212,6 @@ void ForeachNode::initDataFlowGraphModel() {
                         &QtNodes::NodeDelegateModel::computingFinished, this, [this]() {
                             progressCounterMutex.lock();
                             progressCounter--;
-//                            std::cout << "progressCounter --:" << progressCounter << std::endl;
                             progressCounterMutex.unlock();
                             if (progressCounter == 0) {
                                 workFinished.release();
@@ -248,8 +245,8 @@ void ForeachNode::initDataFlowGraphModel() {
 
 void ForeachNode::updateInternalNodeType() {
     //pass data and datatypes to inputNode
-
     auto types = inputPortTypes;
+
     // first element in inputPorts is always BaseArrayData
     types[0] = inputArrayValueType;
     auto inputNode = graphModel->delegateModel<ForeachInputNode>(inputNodeId);
@@ -274,6 +271,7 @@ void ForeachNode::onInputConnectionCreation(QtNodes::ConnectionId connection, Qt
         return;
     }
     dirtyInputConnections = true;
+
     //save type of main array port
     if (connection.inPortIndex == 0) {
         inputPortTypes[0] = type;
@@ -392,7 +390,7 @@ void ForeachNode::updateExternalOutputPorts() {
     }
 
     if (!same) {
-        //remove changed port not after
+        //remove changed port not next one
         if (index > 0) {
             index--;
         }

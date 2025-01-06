@@ -1,5 +1,5 @@
 //
-// Created by vm on 24.18.6.
+// Created by Vladislavs Agarkovs on 24.18.6.
 //
 
 #include "threadPool.h"

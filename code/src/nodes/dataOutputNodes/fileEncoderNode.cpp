@@ -1,5 +1,5 @@
 //
-// Created by vm on 24.26.12.
+// Created by Vladislavs Agarkovs on 24.26.12.
 //
 
 #include <QBoxLayout>

@@ -1,5 +1,5 @@
 //
-// Created by vm on 24.17.11.
+// Created by Vladislavs Agarkovs on 24.17.11.
 //
 #include "dynamicDataFlowGraphModel.h"
 #include "baseNode.h"
@@ -49,7 +49,7 @@ bool DynamicDataFlowGraphModel::connectionPossible(const QtNodes::ConnectionId c
     };
 
 
-    //edgecase for Foreach node
+    //edge case for Foreach node
     if (delegateModel<BaseNodeTypeLessWrapper>(connectionId.outNodeId)->caption() == "In" &&
         delegateModel<BaseNodeTypeLessWrapper>(connectionId.inNodeId)->caption() == "Out") {
         return false;

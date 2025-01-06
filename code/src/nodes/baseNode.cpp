@@ -1,5 +1,5 @@
 //
-// Created by vm on 24.29.11.
+// Created by Vladislavs Agarkovs on 24.29.11.
 //
 #include "baseNode.h"
 

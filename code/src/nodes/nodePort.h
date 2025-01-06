@@ -1,5 +1,5 @@
 //
-// Created by vm on 24.31.10.
+// Created by Vladislavs Agarkovs on 24.31.10.
 //
 
 #pragma once
@@ -8,7 +8,8 @@
 
 
 /**
- * NodeDataType wrapper and type eraser for NodePort
+ * NodeDataType wrapper and type eraser for NodePort.
+ * Stores prt type separate from port data, which allow for nullptr data, and still known port type
  */
 struct BaseNodePort {
     QtNodes::NodeDataType type;
