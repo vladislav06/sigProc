@@ -1,5 +1,5 @@
 //
-// Created by vm on 24.26.12.
+// Created by Vladislavs Agarkovs on 24.26.12.
 //
 #pragma once
 
@@ -21,6 +21,11 @@ public:
      */
     virtual QWidget *getWidgets() = 0;
 
+    /**
+     * Must decode given file and return array
+     * @param file
+     * @param array
+     */
     virtual std::shared_ptr<ArrayData<double>> decode(std::shared_ptr<FileData> file) = 0;
 
     virtual QJsonObject onSave() = 0;

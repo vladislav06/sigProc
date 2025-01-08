@@ -1,5 +1,5 @@
 //
-// Created by vm on 24.10.11.
+// Created by Vladislavs Agarkovs on 24.10.11.
 //
 #pragma once
 
@@ -7,7 +7,7 @@
 #include <QPlainTextEdit>
 #include "src/nodes/baseNode.h"
 
-class PreviewNode : public BaseNode<std::tuple<BaseData>, std::tuple<BaseData>> {
+class PreviewNode : public BaseNode<std::tuple<BaseData>, std::tuple<>> {
 public:
 
     QJsonObject onSave() const override;
@@ -20,7 +20,7 @@ public:
 
     QWidget *embeddedWidget() override;
 
-    std::tuple<std::shared_ptr<BaseData>>
+    std::tuple<>
     compute(std::tuple<std::shared_ptr<BaseData>> params,
             std::vector<std::shared_ptr<BaseData>> adParams) override;
 

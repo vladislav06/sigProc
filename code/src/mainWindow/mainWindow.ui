@@ -11,7 +11,11 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>mainWindow</string>
+   <string>SigProc</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="../../resources/resources.qrc">
+    <normaloff>:/icons/appico.ico</normaloff>:/icons/appico.ico</iconset>
   </property>
   <widget class="QWidget" name="mainWidget">
    <property name="enabled">
@@ -24,24 +28,6 @@
      </widget>
     </item>
    </layout>
-  </widget>
-  <widget class="QMenuBar" name="menubar">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>777</width>
-     <height>30</height>
-    </rect>
-   </property>
-   <widget class="QMenu" name="menuFile">
-    <property name="title">
-     <string>Fi&amp;le</string>
-    </property>
-    <addaction name="actionSave"/>
-    <addaction name="actionOpen"/>
-   </widget>
-   <addaction name="menuFile"/>
   </widget>
   <widget class="QToolBar" name="toolBar">
    <property name="mouseTracking">
@@ -79,7 +65,7 @@
    <addaction name="separator"/>
    <addaction name="actionCopy"/>
    <addaction name="actionPaste"/>
-   <addaction name="actionReload"/>
+   <addaction name="actionCalculate"/>
   </widget>
   <action name="actionAbout">
    <property name="icon">
@@ -155,12 +141,15 @@
     <string>SaveAs</string>
    </property>
   </action>
-  <action name="actionReload">
+  <action name="actionCalculate">
    <property name="icon">
-    <iconset theme="view-refresh"/>
+    <iconset theme="accessories-calculator"/>
    </property>
    <property name="text">
-    <string>Reload</string>
+    <string>Calculate</string>
+   </property>
+   <property name="toolTip">
+    <string>Calculate</string>
    </property>
   </action>
  </widget>

@@ -1,5 +1,5 @@
 //
-// Created by vm on 24.17.11.
+// Created by Vladislavs Agarkovs on 24.17.11.
 //
 #include "dynamicDataFlowGraphModel.h"
 #include "baseNode.h"
@@ -47,6 +47,14 @@ bool DynamicDataFlowGraphModel::connectionPossible(const QtNodes::ConnectionId c
 
         return connected.empty() || (policy == QtNodes::ConnectionPolicy::Many);
     };
+
+
+    //edge case for Foreach node
+    if (delegateModel<BaseNodeTypeLessWrapper>(connectionId.outNodeId)->caption() == "In" &&
+        delegateModel<BaseNodeTypeLessWrapper>(connectionId.inNodeId)->caption() == "Out") {
+        return false;
+    }
+
 
     auto typeOut = getDataType(QtNodes::PortType::Out);
     auto typeIn = getDataType(QtNodes::PortType::In);
@@ -158,6 +166,9 @@ void DynamicDataFlowGraphModel::onNodeCreation(const QtNodes::NodeId nodeId) {
         });
     });
 
+    connect(this, &DynamicDataFlowGraphModel::setComputing, model, &BaseNodeTypeLessWrapper::setComputeMode,
+            Qt::DirectConnection);
+
     //register special signal for view change for foreachNode
     if (typeid(*model) == typeid(ForeachNode)) {
         connect((ForeachNode *) model, &ForeachNode::setView, this,
@@ -187,7 +198,7 @@ bool DynamicDataFlowGraphModel::deleteNode(const QtNodes::NodeId nodeId) {
     auto node = delegateModel<BaseNodeTypeLessWrapper>(nodeId);
 
     node->prepareToDelete([this, nodeId]() {
-            DataFlowGraphModel::deleteNode(nodeId);
+        DataFlowGraphModel::deleteNode(nodeId);
 
     });
     return true;

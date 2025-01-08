@@ -1,5 +1,5 @@
 //
-// Created by vm on 24.8.11.
+// Created by Vladislavs Agarkovs on 24.8.11.
 //
 #pragma once
 
@@ -7,7 +7,8 @@
 #include "QtNodes/GraphicsView"
 
 /**
- * Extension of DataFlowGraphModel which allows connection between nodes if NodeDataType is with the same base
+ * Extension of DataFlowGraphModel.
+ * Adds proper type handling, cycle prevention, and additional signals
  */
 class DynamicDataFlowGraphModel : public QtNodes::DataFlowGraphModel {
 Q_OBJECT
@@ -16,7 +17,6 @@ public:
     explicit DynamicDataFlowGraphModel(std::shared_ptr<QtNodes::NodeDelegateModelRegistry> registry);
 
     bool connectionPossible(QtNodes::ConnectionId connectionId) const override;
-
 
     bool willHaveCycle(QtNodes::ConnectionId connectionId) const;
 
@@ -35,4 +35,7 @@ signals:
     void setView(QtNodes::GraphicsView *graphView, DynamicDataFlowGraphModel *graphModel);
 
     void viewClosed();
+
+    void setComputing(bool compute);
+
 };

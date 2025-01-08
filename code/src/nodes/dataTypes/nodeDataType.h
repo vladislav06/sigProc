@@ -1,5 +1,5 @@
 //
-// Created by vm on 24.30.10.
+// Created by Vladislavs Agarkovs on 24.30.10.
 //
 #pragma once
 
@@ -126,14 +126,51 @@ public:
             return {};
         }
         QString result = derivedTypes[d];
-        for (int i = d+1; i < derivedTypes.size(); i++) {
+        for (int i = d + 1; i < derivedTypes.size(); i++) {
             result += "_" + derivedTypes[i];
         }
 
         return {.id=result, .name=""};
     }
 
-    static QString getName(QtNodes::NodeDataType type){
-        return type.id.split("_").back().toLower();
+
+    /**
+     * Returns type name from lit of types
+     * @param type list of types from which to extract name
+     * @return type name
+     */
+    static QString getName(QStringList types) {
+        // go from base until the end or new base
+        // if only one base then type name will be last type lowercase
+        // if second base found, then second base is template type
+        for (int i = 1; i < types.size(); i++) {
+            if (types[i] == "Base") {
+                //recursively get name
+                auto templateName = getName({types.begin() + i, types.end()});
+                return types[i - 1].toLower() + "<" + templateName + ">";
+            }
+        }
+        return types.back().toLower();
+    }
+
+    /**
+     * Returns type name from type id
+     * @param type type from which to extract name
+     * @return type name
+     */
+    static QString getName(QtNodes::NodeDataType type) {
+        // go from base until the end or new base
+        // if only one base then type name will be last type lowercase
+        // if second base found, then second base is template type
+        auto types = type.id.split("_");
+        for (int i = 1; i < types.size(); i++) {
+            //case for array
+            if(types[i]=="Array"){
+                //recursively get name
+                auto templateName = getName({types.begin() + i+1, types.end()});
+                return types[i].toLower() + "<" + templateName + ">";
+            }
+        }
+        return types.back().toLower();
     }
 };

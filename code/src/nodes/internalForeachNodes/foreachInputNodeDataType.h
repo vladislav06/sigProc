@@ -1,7 +1,7 @@
 #include <utility>
 
 //
-// Created by vm on 24.9.12.
+// Created by Vladislavs Agarkovs on 24.9.12.
 //
 #pragma once
 

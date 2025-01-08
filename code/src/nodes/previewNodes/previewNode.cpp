@@ -1,5 +1,5 @@
 //
-// Created by vm on 24.10.11.
+// Created by Vladislavs Agarkovs on 24.10.11.
 //
 
 #include <QBoxLayout>
@@ -36,11 +36,11 @@ QWidget *PreviewNode::embeddedWidget() {
 }
 
 
-std::tuple<std::shared_ptr<BaseData>> PreviewNode::compute(std::tuple<std::shared_ptr<BaseData>> params,
+std::tuple<> PreviewNode::compute(std::tuple<std::shared_ptr<BaseData>> params,
                                                            std::vector<std::shared_ptr<BaseData>> adParams) {
     parameters = params;
     auto obj = std::get<0>(params);
-    return params;
+    return {};
 }
 
 void PreviewNode::afterCompute() {

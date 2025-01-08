@@ -1,5 +1,5 @@
 //
-// Created by vm on 24.4.12.
+// Created by Vladislavs Agarkovs on 24.4.12.
 //
 
 #pragma once
@@ -17,7 +17,7 @@
 /**
  * Has one array input and any amount of BaseType inputs.
  * This node will pass each value of input array to dataFlowGraphModel that is stored inside the node.
- * Effectively for(auto T:array<T>);
+ * Effectively for(auto T: array<T>);
  */
 class ForeachNode : public BaseNodeTypeLessWrapper {
 Q_OBJECT
@@ -34,20 +34,19 @@ private:
     DynamicDataFlowGraphModel *graphModel;
 
     /// workFinished.notify_all() will be called when DynamicDataFlowGraphModel completes data propagation
-//    std::unique_ptr<std::condition_variable> workFinished = std::make_unique<std::condition_variable>();
     std::binary_semaphore workFinished{1};
 
-    int counterStarted = 0;
-    int counterFinished = 0;
+
+    /// This mutex guards progressCounter
+    std::mutex progressCounterMutex;
+
+    /// This counter keeps track of nodes that currently computes something, 0 means that all nodes have ended computation
+    int progressCounter = 0;
 
 
+
+    /// This semaphore guards computation function (setInData)
     std::binary_semaphore workSemaphore{1};
-
-
-//    /**
-//     * Array that currently is being processed
-//     */
-//    std::shared_ptr<BaseDataArrayData> processedArray;
 
     QtNodes::DataFlowGraphicsScene *scene;
 
@@ -146,10 +145,19 @@ signals:
 
 private:
 
+    /**
+     * Initializes internal graph model, adds required nodes, and connects required slots
+     */
     void initDataFlowGraphModel();
 
+    /**
+     * Updates graph models foreachInputNode
+     */
     void updateInternalNodeType();
 
+    /**
+     * Updates graph models foreachOutputNode
+     */
     void updateExternalOutputPorts();
 };
 

@@ -1,5 +1,5 @@
 //
-// Created by vm on 24.26.12.
+// Created by Vladislavs Agarkovs on 24.26.12.
 //
 #pragma once
 
@@ -22,6 +22,11 @@ public:
      */
     virtual QWidget *getWidgets() = 0;
 
+    /**
+     * Must encode given array into provided file
+     * @param file
+     * @param array
+     */
     virtual void encode(std::shared_ptr<FileData> file, std::shared_ptr<ArrayData<double>> array) = 0;
 
     virtual QJsonObject onSave() = 0;

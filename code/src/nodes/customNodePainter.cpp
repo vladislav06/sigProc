@@ -1,5 +1,5 @@
 //
-// Created by vm on 24.29.12.
+// Created by Vladislavs Agarkovs on 24.29.12.
 //
 #include <QJsonDocument>
 #include "customNodePainter.h"
@@ -9,9 +9,6 @@
 #include "QtNodes/internal/AbstractNodeGeometry.hpp"
 #include "QtNodes/internal/BasicGraphicsScene.hpp"
 #include "QtNodes/internal/NodeStyle.hpp"
-#include "QtNodes/internal/StyleCollection.hpp"
-#include "QtNodes/internal/ConnectionIdUtils.hpp"
-
 void CustomNodePainter::paint(QPainter *painter, QtNodes::NodeGraphicsObject &ngo) const {
     drawNodeRect(painter, ngo);
 
@@ -56,6 +53,7 @@ void CustomNodePainter::drawCustomEntryLabels(QPainter *painter, QtNodes::NodeGr
             if (!caption.isEmpty()) {
                 auto p0 = p;
                 auto p1 = p;
+                //draw caption above type, but centered around port text position
                 p0.setY(p0.y() - (painter->fontMetrics().height() / 3.0));
                 p1.setY(p1.y() + (painter->fontMetrics().height() / 3.0));
                 painter->drawText(p0, caption);

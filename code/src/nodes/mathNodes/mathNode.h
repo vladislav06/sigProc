@@ -1,5 +1,5 @@
 //
-// Created by vm on 24.7.11.
+// Created by Vladislavs Agarkovs on 24.7.11.
 //
 #pragma once
 
@@ -16,10 +16,9 @@
 #include "operations/multiplicationOperation.h"
 #include "operations/divisionOperation.h"
 
-#define TYPE ArrayData<T>
 
 template<typename T>
-class MathNode : public BaseNode<std::tuple<TYPE, TYPE >, std::tuple<TYPE>> {
+class MathNode : public BaseNode<std::tuple<ArrayData<T>, ArrayData<T> >, std::tuple<ArrayData<T>>> {
 public:
     MathNode() {
         this->setCaptions({"Input a", "Input b"}, {"result"});
@@ -123,13 +122,13 @@ public:
 private:
     QWidget *base = nullptr;
     QPushButton *button = nullptr;
-    BaseOperation<TYPE > *selectedOp = nullptr;
+    BaseOperation<ArrayData<T> > *selectedOp = nullptr;
     QWidget *popup = nullptr;
 
 
     struct OpGroup {
         QString name;
-        std::vector<BaseOperation<TYPE > *> ops;
+        std::vector<BaseOperation<ArrayData<T> > *> ops;
     };
 
     /**
@@ -137,12 +136,12 @@ private:
      */
     std::vector<OpGroup> groups = {
             {.name="Math", .ops={
-                    new AdditionOperation<TYPE >(),
-                    new SubtractionOperation<TYPE >(),
+                    new AdditionOperation<ArrayData<T> >(),
+                    new SubtractionOperation<ArrayData<T>>(),
             }},
             {.name="Math", .ops={
-                    new MultiplicationOperation<TYPE >(),
-                    new DivisionOperation<TYPE >(),
+                    new MultiplicationOperation<ArrayData<T> >(),
+                    new DivisionOperation<ArrayData<T>>(),
 
             }},
     };

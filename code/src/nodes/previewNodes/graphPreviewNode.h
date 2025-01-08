@@ -1,5 +1,5 @@
 //
-// Created by vm on 24.18.11.
+// Created by Vladislavs Agarkovs on 24.18.11.
 //
 #pragma once
 
@@ -145,6 +145,7 @@ public:
     }
 
     void onInputConnected(int index) override {
+        
         this->addInputPort();
         emit this->embeddedWidgetSizeUpdated();
     }

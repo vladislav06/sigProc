@@ -1,5 +1,5 @@
 //
-// Created by vm on 24.2.12.
+// Created by Vladislavs Agarkovs on 24.2.12.
 //
 #pragma once
 
@@ -34,6 +34,10 @@ public:
         folderPath = std::move(path);
     }
 
+    /**
+     *
+     * @return all folders that are contained inside this folder
+     */
     std::vector<FolderData> getFolders() {
         QDir directory(folderPath);
         if (!directory.exists()) {
@@ -45,7 +49,10 @@ public:
         }
         return folders;
     }
-
+    /**
+     *
+     * @return all files that are contained inside this folder
+     */
     std::shared_ptr<ArrayData<std::shared_ptr<FileData>>> getFiles() {
         QDir directory(folderPath);
         if (!directory.exists()) {

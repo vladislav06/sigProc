@@ -1,5 +1,5 @@
 //
-// Created by vm on 24.30.10.
+// Created by Vladislavs Agarkovs on 24.30.10.
 //
 #pragma once
 
@@ -10,7 +10,9 @@
 #include <QtNodes/GraphicsView>
 #include <QtNodes/NodeDelegateModelRegistry>
 #include <QPushButton>
+#include <QProgressBar>
 #include "src/nodes/customNodePainter.h"
+
 class MainWindow : public QMainWindow, private Ui::mainWindow {
 Q_OBJECT
 
@@ -23,6 +25,9 @@ private:
     QString currentFile;
     bool dirty;
     QPushButton *backButton = nullptr;
+    QProgressBar *progressBar = nullptr;
+
+    const QString WINDOW_TITLE = "SigProc[*]";
 
 
 public:
@@ -32,12 +37,29 @@ public slots:
 
     void changeView(QtNodes::GraphicsView *graphView, DynamicDataFlowGraphModel *graphModel);
 
+    void calculate(bool checked);
+
+    void calculationEnded();
+
+    void newAlgorithm();
+
+    void save();
+
+    void saveAs();
+
+signals:
+
+    void calculationEndedSignal();
+
 private:
     void onSave();
 
     void onLoad();
 
     void setDirty(bool dirty);
+
+    std::mutex progressCounterMutex;
+    int progressCounter = 0;
 
 };
 
